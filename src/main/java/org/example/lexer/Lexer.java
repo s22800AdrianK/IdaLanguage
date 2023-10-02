@@ -3,7 +3,7 @@ package org.example.lexer;
 import org.example.token.Token;
 
 public abstract class Lexer {
-    private static boolean isEmpty = false;
+    private boolean isEmpty = false;
     private final String input;
     private int positionOfCurrent = 0;
 
@@ -16,7 +16,7 @@ public abstract class Lexer {
     }
     public abstract Token nextToken();
 
-    public static boolean isEmpty() {
+    public boolean isEmpty() {
         return isEmpty;
     }
 

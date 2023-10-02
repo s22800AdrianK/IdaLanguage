@@ -7,7 +7,7 @@ import org.example.token.TokenType;
 
 public class Main {
     public static void main(String[] args) {
-        String input = "1+2*12";
+        String input = "1+2*12.12";
         Lexer lexer = new IdaLexer(input);
         Token current = lexer.nextToken();
         while (current.getType()!= TokenType.EOF_TYPE) {

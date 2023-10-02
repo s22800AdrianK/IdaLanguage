@@ -1,9 +1,10 @@
 package org.example.token;
 
 public enum TokenType {
+    WHITESPACE("\r|\n| "),
     EOF_TYPE("<EOF>"),
-    INT("\\d+"),
     FLOAT("\\d+\\.\\d+"),
+    INT("\\d+"),
     STRING("\".*\""),
     BOOL("true|false"),
     ADD("\\+"),
