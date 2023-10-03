@@ -5,7 +5,7 @@ public enum TokenType {
     EOF_TYPE("<EOF>"),
     FLOAT("\\d+\\.\\d+"),
     INT("\\d+"),
-    STRING("\".*\""),
+    STRING("\"(\\\\.|[^\\\\\"])*\""),
     BOOL("true|false"),
     ADD("\\+"),
     MINUS("\\-"),

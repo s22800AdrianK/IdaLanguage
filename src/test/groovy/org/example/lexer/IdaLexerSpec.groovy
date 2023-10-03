@@ -15,11 +15,12 @@ class IdaLexerSpec extends Specification {
         where:
         input          || expectedType       || expectedValue
         "someName"     || TokenType.NAME     || "someName"
-        "123"          || TokenType.INT      || "123"
+        "123  "        || TokenType.INT      || "123"
         "123.456"      || TokenType.FLOAT    || "123.456"
         "+"            || TokenType.ADD      || "+"
         "fn"           || TokenType.FN       || "fn"
         "\"ala\""      || TokenType.STRING   || "ala"
+        "\"rondo \\\"Radosława\\\"\"" || TokenType.STRING || "rondo \"Radosława\""
     }
 
     def "test nextToken with unexpected sign"() {

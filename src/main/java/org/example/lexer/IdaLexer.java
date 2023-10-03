@@ -31,6 +31,8 @@ public class IdaLexer extends Lexer{
 
     private Token createToken(String match,TokenType tokenType){
         return tokenType!=TokenType.STRING?
-                new Token(tokenType,match) : new Token(tokenType,match.substring(1,match.length()-1));
+                new Token(tokenType,match) :
+                new Token(tokenType,match.substring(1,match.length()-1).replace("\\\"","\""));
+
     }
 }
