@@ -11,7 +11,11 @@ statement
 	| ifStatement
 	| printStatement
 	| block
+	| expressionStatement
 	;
+
+expressionStatement
+    : expression
 
 functionDefinition
 	: 'fn' NAME '('(parameter (',' parameter)*)? ')' ':' typeSpecifier block
@@ -36,7 +40,7 @@ assignmentStatement
 
 
 ifStatement
-    :   'if' expression ':' '{' (statement)* '}' ('else' ':' '{' (statement)* '}')?
+    :   'if' expression ':' block ('else' ':' block)?
     ;
 
 
@@ -90,9 +94,9 @@ typeSpecifier
     |   'float'
     |   'string'
     |   'bool'
+    |   NAME
     ;
 
 NAME  :   [a-zA-Z_][a-zA-Z_0-9]*;
-INT   :   [0-9]+;
-FLOAT :   [0-9]+ '.' [0-9]+;
+NUMBER :   '-'?[0-9]+ ('.' [0-9]+)?;
 STRING :  "\"(\.|[^\\"])*\"";

@@ -3,8 +3,7 @@ package org.example.token;
 public enum TokenType {
     WHITESPACE("\r|\n| "),
     EOF_TYPE("<EOF>"),
-    FLOAT("\\d+\\.\\d+"),
-    INT("\\d+"),
+    NUMBER("-?\\d+(\\.\\d+)*"),
     STRING("\"(\\\\.|[^\\\\\"])*\""),
     BOOL("true|false"),
     ADD("\\+"),

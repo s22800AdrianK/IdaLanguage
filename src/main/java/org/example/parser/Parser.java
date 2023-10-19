@@ -2,8 +2,9 @@ package org.example.parser;
 
 import org.example.lexer.Lexer;
 import org.example.token.Token;
+import org.example.token.TokenType;
 
-public class Parser {
+public abstract class Parser {
     Lexer input;
     Token[] lookahead;
     int bufferSize;
@@ -24,5 +25,17 @@ public class Parser {
     protected void consume() {
         lookahead[position] = input.nextToken();
         position = (position+1)%bufferSize;
+    }
+    public Token LT(int i) {
+        return lookahead[(position+i-1)%bufferSize];
+    }
+    public TokenType LA(int i) {
+        return LT(i).getType();
+    }
+
+    public void match(TokenType x) {
+        System.out.println(x);
+        if(LA(1) == x) consume();
+        else throw new RuntimeException("expecting "+x+"; found "+LT(1));
     }
 }
