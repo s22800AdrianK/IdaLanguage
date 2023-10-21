@@ -1,9 +1,9 @@
 package org.example.token;
 
 public enum TokenType {
-    WHITESPACE("\r|\n| "),
+    WHITESPACE("\\s+|\\t+"),
     EOF_TYPE("<EOF>"),
-    NUMBER("-?\\d+(\\.\\d+)*"),
+    NUMBER("-?\\d+(\\.\\d+)?"),
     STRING("\"(\\\\.|[^\\\\\"])*\""),
     BOOL("true|false"),
     ADD("\\+"),
@@ -26,8 +26,7 @@ public enum TokenType {
     IF("if"),
     ELSE("else"),
     PRINT("print"),
-    TYPE_INT("int"),
-    TYPE_FLOAT("float"),
+    TYPE_NUMBER("num"),
     TYPE_STRING("string"),
     TYPE_BOOL("bool"),
     NAME("[a-zA-Z_][a-zA-Z_0-9]*"),

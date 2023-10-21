@@ -20,13 +20,15 @@ public class IdaLexer extends Lexer{
         for (TokenType token: TokenType.values()) {
             Pattern pattern = Pattern.compile("^(" + token.getRegex() + ")");
             Matcher matcher = pattern.matcher(getNext());
-            if(token!=TokenType.WHITESPACE && matcher.find()) {
+            if(matcher.find()) {
                 String match = matcher.group();
                 advance(match.length());
-                return  createToken(match,token);
+                if (token != TokenType.WHITESPACE) {
+                    return createToken(match, token);
+                }
             }
         }
-        throw new RuntimeException("unexpected sign at position: "+getPositionOfCurrent()+" "+getInput().charAt(getPositionOfCurrent()));
+        throw new RuntimeException("unexpected sign at position: "+getPositionOfCurrent()+","+getInput().charAt(getPositionOfCurrent()));
     }
 
     private Token createToken(String match,TokenType tokenType){

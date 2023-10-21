@@ -5,10 +5,10 @@ import org.example.token.Token;
 import org.example.token.TokenType;
 
 public abstract class Parser {
-    Lexer input;
-    Token[] lookahead;
-    int bufferSize;
-    int position = 0;
+    private final Lexer input;
+    private final Token[] lookahead;
+    private final int bufferSize;
+    private int position;
 
     public Parser(Lexer lexer, int bufferSize) {
         this.input = lexer;

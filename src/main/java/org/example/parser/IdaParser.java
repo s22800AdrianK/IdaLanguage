@@ -1,7 +1,12 @@
 package org.example.parser;
 
+import org.example.ast.*;
 import org.example.lexer.Lexer;
+import org.example.token.Token;
 import org.example.token.TokenType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IdaParser extends Parser{
 
@@ -9,32 +14,39 @@ public class IdaParser extends Parser{
         super(lexer, bufferSize);
     }
 
-    public void program() {
+    public ProgramNode program() {
+        ProgramNode programNode = new ProgramNode();
         while (LA(1) != TokenType.EOF_TYPE){
-            statement();
+            programNode.addStatements(statement());
         }
+        return programNode;
     }
 
-    private void statement() {
-        switch(LA(1)) {
+    private StatementNode statement() {
+        return switch (LA(1)) {
             case FN -> functionStatement();
-            case NAME -> {
-                if (LA(2) == TokenType.EQUALS || LA(2) == TokenType.COLON) {
-                    variable();
-                } else {
-                    expressionStatement();
-                }
-            }
+            case NAME -> expresionOrVariable();
             case IF -> ifStatement();
             case PRINT -> printStatement();
+            case L_C_BRACK -> block();
             default -> {
                 if (isExpressionStart(LA(1))) {
-                    expressionStatement();
+                    yield expressionStatement();
                 } else {
                     throw new RuntimeException("expecting statement; found " + LT(1));
                 }
             }
+        };
+    }
+
+    private BlockNode block() {
+        BlockNode node = new BlockNode(null);
+        match(TokenType.L_C_BRACK);
+        while (LA(1)!=TokenType.R_C_BRACK){
+            node.addStatement(statement());
         }
+        match(TokenType.R_C_BRACK);
+        return node;
     }
 
     private boolean isExpressionStart(TokenType type) {
@@ -43,42 +55,80 @@ public class IdaParser extends Parser{
                 || type == TokenType.STRING
                 || type == TokenType.L_BRACK;
     }
-    private void printStatement() {
+
+    private StatementNode expresionOrVariable() {
+        if (LA(2) == TokenType.EQUALS || LA(2) == TokenType.COLON) {
+            return variable();
+        } else {
+            return expressionStatement();
+        }
+    }
+    private StatementNode  printStatement() {
+        PrintStatementNode print = new PrintStatementNode(LT(1));
+        match(TokenType.PRINT);
+        print.setExpression(expression());
+        return print;
     }
 
-    private void ifStatement() {
+    private IfStatementNode ifStatement() {
+        IfStatementNode ifst = new IfStatementNode(LT(1));
+        match(TokenType.IF);
+        ifst.setCondition(expression());
+        ifst.setThenBlock(block());
+        if(LA(1)==TokenType.ELSE) {
+            ifst.setElseBlock(block());
+        }
+        return ifst;
     }
 
-    private void expressionStatement() {
-        expression();
+    private StatementNode expressionStatement() {
+        return expression();
     }
 
-    private void expression() {
-        booleanExpression();
+    private ExpressionNode expression() {
+        return booleanExpression();
     }
 
-    private void booleanExpression() {
-        equalityExpression();
+    private ExpressionNode booleanExpression() {
+        ExpressionNode currentExpr = equalityExpression();
         while (LA(1) == TokenType.AND || LA(1) == TokenType.OR) {
+            Token opToken = LT(1);
             match(LA(1));
-            equalityExpression();
+            ExpressionNode right = equalityExpression();
+            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(right);
+            currentExpr = newExpr;
         }
+        return currentExpr;
     }
 
-    private void equalityExpression() {
-        relationalExpression();
-        while (LA(1) == TokenType.OP_EQUALS || LA(1) == TokenType.OP_NOT_EQUALS) { // dla '==' oraz '!='
+    private ExpressionNode equalityExpression() {
+        ExpressionNode currentExpr = relationalExpression();
+        while (LA(1) == TokenType.OP_EQUALS || LA(1) == TokenType.OP_NOT_EQUALS) {
+            Token opToken = LT(1);
             match(LA(1));
-            relationalExpression();
+            ExpressionNode right = relationalExpression();
+            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(right);
+            currentExpr = newExpr;
         }
+        return currentExpr;
     }
 
-    private void relationalExpression() {
-        additiveExpression();
-        while (isRelationalOperator(LA(1))) { // dla '<', '>', '<=', '>='
+    private ExpressionNode relationalExpression() {
+        ExpressionNode currentExpr = additiveExpression();
+        while (isRelationalOperator(LA(1))) {
+            Token opToken = LT(1);
             match(LA(1));
-            additiveExpression();
+            ExpressionNode right = additiveExpression();
+            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(right);
+            currentExpr = newExpr;
         }
+        return currentExpr;
     }
 
     private boolean isRelationalOperator(TokenType type) {
@@ -88,58 +138,143 @@ public class IdaParser extends Parser{
                 || type == TokenType.OP_GRATER_EQUAL; // dla '>='
     }
 
-    private void additiveExpression() {
-        multiplicativeExpression();
-        while (LA(1) == TokenType.ADD || LA(1) == TokenType.MINUS) { // dla '+' oraz '-'
+    private ExpressionNode additiveExpression() {
+        ExpressionNode currentExpr = multiplicativeExpression();
+        while (LA(1) == TokenType.ADD || LA(1) == TokenType.MINUS) {
+            Token opToken = LT(1);
             match(LA(1));
-            multiplicativeExpression();
+            ExpressionNode  right = multiplicativeExpression();
+            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(right);
+            currentExpr = newExpr;
         }
+        return currentExpr;
     }
 
-    private void multiplicativeExpression() {
-        primaryExpression();
-        while (LA(1) == TokenType.MULT || LA(1) == TokenType.DEVID || LA(1) == TokenType.MODULO) { // dla '*', '/' oraz '%'
+    private ExpressionNode multiplicativeExpression() {
+        ExpressionNode currentExpr = primaryExpression();
+        while (LA(1) == TokenType.MULT || LA(1) == TokenType.DEVID || LA(1) == TokenType.MODULO) {
+            Token opToken = LT(1);
             match(LA(1));
-            primaryExpression();
+            ExpressionNode right = primaryExpression();
+            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(right);
+            currentExpr = newExpr;
         }
+        return currentExpr;
     }
 
-    private void primaryExpression() {
+    private ExpressionNode primaryExpression() {
+        ExpressionNode node;
         if (LA(1) == TokenType.NAME) {
             if (LA(2) == TokenType.L_BRACK) {
-                functionCall();  // jeśli po nazwie następuje nawias otwierający, zakładamy że to wywołanie funkcji
+                node = functionCall();  // jeśli po nazwie następuje nawias otwierający, zakładamy że to wywołanie funkcji
             } else {
+                node = new PrimaryExNode(LT(1));
                 match(TokenType.NAME);
             }
         } else if (LA(1) == TokenType.NUMBER) {
+            node = new PrimaryExNode(LT(1));
             match(TokenType.NUMBER);
         } else if (LA(1) == TokenType.STRING) {
+            node = new PrimaryExNode(LT(1));
             match(TokenType.STRING);
         } else if (LA(1) == TokenType.L_BRACK) {
             match(TokenType.L_BRACK);
-            expression();
+            node = expression();
             match(TokenType.R_BRACK);
         } else {
             throw new RuntimeException("expecting primary expression; found " + LT(1));
         }
+        return node;
     }
 
-    private void functionCall() {
+    private ExpressionNode functionCall() {
+        Token functionName = LT(1);
         match(TokenType.NAME);
         match(TokenType.L_BRACK);
+        FunctionCallNode functionCall = new FunctionCallNode(functionName);
         if (isExpressionStart(LA(1))) {
-            expression();
+            functionCall.add(expression());
             while (LA(1) == TokenType.COMMA) {
                 match(TokenType.COMMA);
-                expression();
+                functionCall.add(expression());
             }
         }
         match(TokenType.R_BRACK);
+        return functionCall;
     }
 
-    private void variable() {
+    private StatementNode variable() {
+        if(LA(2)==TokenType.EQUALS) return assignment();
+        else if (LA(2)==TokenType.COLON) return variableDefinition();
+        else throw new RuntimeException("expecting typeSpecifier; found "+LT(2));
     }
 
-    private void functionStatement() {
+    private VariableDefNode variableDefinition() {
+        Token name = LT(1);
+        VariableDefNode node = new VariableDefNode(name);
+        node.setVariable(parameter());
+        if(LA(1)==TokenType.EQUALS) {
+            match(TokenType.EQUALS);
+            node.setInitializer(expression());
+        }
+        return node;
+    }
+
+    private TypeSpecifierNode typeSpecifier() {
+        TypeSpecifierNode node = new TypeSpecifierNode(LT(1));
+         switch (LA(1)) {
+            case TYPE_NUMBER -> match(TokenType.TYPE_NUMBER);
+            case TYPE_BOOL -> match(TokenType.TYPE_BOOL);
+            case TYPE_STRING -> match(TokenType.TYPE_STRING);
+            case NAME -> match(TokenType.NAME);
+            default -> throw new RuntimeException("expecting typeSpecifier; found "+LT(1));
+        }
+        return node;
+    }
+
+    private AssignmentNode assignment() {
+        Token name = LT(1);
+        AssignmentNode node = new AssignmentNode(name);
+        match(TokenType.NAME);
+        match(TokenType.EQUALS);
+        node.setExpression(expression());
+        return node;
+    }
+    private FunctionDefNode functionStatement() {
+        match(TokenType.FN);
+        FunctionDefNode function = new FunctionDefNode(LT(1));
+        match(TokenType.NAME);
+        match(TokenType.L_BRACK);
+        if (LA(1)==TokenType.NAME){
+            function.setParameters(parameters());
+        }
+        match(TokenType.R_BRACK);
+        match(TokenType.COLON);
+        function.setReturnType(typeSpecifier());
+        function.setBody(block());
+        return function;
+    }
+
+    private List<ParameterNode> parameters() {
+        List<ParameterNode> params = new ArrayList<>();
+        params.add(parameter());
+        while (LA(1)==TokenType.COMMA){
+            match(TokenType.COMMA);
+            params.add(parameter());
+        }
+        return params;
+    }
+
+    private ParameterNode parameter() {
+        Token name = LT(1);
+        ParameterNode parameterNode = new ParameterNode(name);
+        match(TokenType.NAME);
+        match(TokenType.COLON);
+        parameterNode.setTypeSpecifier(typeSpecifier());
+        return parameterNode;
     }
 }
