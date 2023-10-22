@@ -21,7 +21,6 @@ public class BinaryOpNode extends ExpressionNode {
     public void setLeft(ExpressionNode left) {
         this.left = left;
     }
-
     public void setRight(ExpressionNode right) {
         this.right = right;
     }

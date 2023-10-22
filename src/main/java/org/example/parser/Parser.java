@@ -34,7 +34,6 @@ public abstract class Parser {
     }
 
     public void match(TokenType x) {
-        System.out.println(x);
         if(LA(1) == x) consume();
         else throw new RuntimeException("expecting "+x+"; found "+LT(1));
     }
