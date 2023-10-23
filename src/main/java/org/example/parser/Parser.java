@@ -1,5 +1,6 @@
 package org.example.parser;
 
+import org.example.ast.ProgramNode;
 import org.example.lexer.Lexer;
 import org.example.token.Token;
 import org.example.token.TokenType;
@@ -26,15 +27,15 @@ public abstract class Parser {
         lookahead[position] = input.nextToken();
         position = (position+1)%bufferSize;
     }
-    public Token LT(int i) {
+    protected Token LT(int i) {
         return lookahead[(position+i-1)%bufferSize];
     }
-    public TokenType LA(int i) {
+    protected TokenType LA(int i) {
         return LT(i).getType();
     }
-
-    public void match(TokenType x) {
+    protected void match(TokenType x) {
         if(LA(1) == x) consume();
         else throw new RuntimeException("expecting "+x+"; found "+LT(1));
     }
+    public abstract ProgramNode program();
 }

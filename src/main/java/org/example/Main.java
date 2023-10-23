@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         String input = """
                 if 12 == 13 {
-                    a:num = 13
+                    a:(num>12) = 13
                     c:num = 13
                 }
                 

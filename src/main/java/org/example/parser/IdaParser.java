@@ -10,6 +10,8 @@ import java.util.List;
 
 public class IdaParser extends Parser{
 
+    private enum WorkMode {normal,typeGuard}
+    private WorkMode currentMode = WorkMode.normal;
     public IdaParser(Lexer lexer, int bufferSize) {
         super(lexer, bufferSize);
     }
@@ -167,10 +169,34 @@ public class IdaParser extends Parser{
     }
 
     private ExpressionNode primaryExpression() {
+        return switch (currentMode){
+            case normal -> primaryExpressionNormal();
+            case typeGuard -> primaryExpressionGuard();
+        };
+    }
+
+    private ExpressionNode primaryExpressionGuard() {
+        ExpressionNode node;
+        if (LA(1) == TokenType.NUMBER) {
+            node = new PrimaryExNode(LT(1));
+            match(TokenType.NUMBER);
+        } else if (LA(1) == TokenType.STRING) {
+            node = new PrimaryExNode(LT(1));
+            match(TokenType.STRING);
+        } else if (isTypeIdentifier(LA(1))) {
+            node = new PrimaryGuardNode(LT(1));
+            match(LA(1));
+        } else {
+            throw new RuntimeException("expecting primary expression; found " + LT(1));
+        }
+        return node;
+    }
+
+    private ExpressionNode primaryExpressionNormal() {
         ExpressionNode node;
         if (LA(1) == TokenType.NAME) {
             if (LA(2) == TokenType.L_BRACK) {
-                node = functionCall();  // jeśli po nazwie następuje nawias otwierający, zakładamy że to wywołanie funkcji
+                node = functionCall();
             } else {
                 node = new PrimaryExNode(LT(1));
                 match(TokenType.NAME);
@@ -274,7 +300,22 @@ public class IdaParser extends Parser{
         ParameterNode parameterNode = new ParameterNode(name);
         match(TokenType.NAME);
         match(TokenType.COLON);
-        parameterNode.setTypeSpecifier(typeSpecifier());
+        this.currentMode = WorkMode.typeGuard;
+        if(LA(1)==TokenType.L_BRACK){
+            match(TokenType.L_BRACK);
+            parameterNode.setGuardExpression(expression());
+            match(TokenType.R_BRACK);
+        }else {
+            parameterNode.setGuardExpression(primaryExpressionGuard());
+        }
+        this.currentMode = WorkMode.normal;
         return parameterNode;
+    }
+
+    private boolean isTypeIdentifier(TokenType type) {
+        return type == TokenType.TYPE_NUMBER
+                || type == TokenType.TYPE_BOOL
+                || type == TokenType.TYPE_STRING
+                || type == TokenType.NAME;
     }
 }
