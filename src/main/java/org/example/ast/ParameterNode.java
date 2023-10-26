@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 import org.example.type.Type;
 
@@ -22,5 +23,18 @@ public class ParameterNode extends BaseNode{
 
     public void setGuardExpression(ExpressionNode guardExpression) {
         this.guardExpression = guardExpression;
+    }
+
+    public List<Type> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<Type> types) {
+        this.types = types;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

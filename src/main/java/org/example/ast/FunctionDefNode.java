@@ -1,5 +1,7 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
+import org.example.symbol.FunctionSymbol;
 import org.example.token.Token;
 
 import java.util.List;
@@ -8,6 +10,7 @@ public class FunctionDefNode extends StatementNode{
     private List<ParameterNode> parameters;
     private TypeSpecifierNode returnType;
     private BlockNode body;
+    private FunctionSymbol functionSymbol;
     public FunctionDefNode(Token token) {
         super(token);
     }
@@ -34,5 +37,10 @@ public class FunctionDefNode extends StatementNode{
 
     public void setBody(BlockNode body) {
         this.body = body;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

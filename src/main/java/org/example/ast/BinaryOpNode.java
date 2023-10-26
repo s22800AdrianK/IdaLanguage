@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 import org.example.token.TokenType;
 
@@ -23,5 +24,10 @@ public class BinaryOpNode extends ExpressionNode {
     }
     public void setRight(ExpressionNode right) {
         this.right = right;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -15,8 +15,5 @@ public abstract class BaseNode {
     public boolean isAbstractNode() {
         return token==null;
     }
-
-    public void visit(Visitor visitor) {
-        visitor.visit(this);
-    }
+    public abstract void visit(Visitor visitor);
 }

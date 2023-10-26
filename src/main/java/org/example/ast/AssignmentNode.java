@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 public class AssignmentNode extends StatementNode{
@@ -7,6 +8,8 @@ public class AssignmentNode extends StatementNode{
     public AssignmentNode(Token token) {
         super(token);
     }
+
+
 
     public String getVariableName() {
         return this.getToken().getValue();
@@ -18,5 +21,9 @@ public class AssignmentNode extends StatementNode{
 
     public void setExpression(ExpressionNode expression) {
         this.expression = expression;
+    }
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

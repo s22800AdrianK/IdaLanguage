@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 import java.util.Optional;
@@ -23,5 +24,10 @@ public class VariableDefNode extends StatementNode {
 
     public void setVariable(ParameterNode variable) {
         this.variable = variable;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

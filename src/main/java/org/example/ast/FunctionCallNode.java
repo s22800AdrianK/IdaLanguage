@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 import java.util.ArrayList;
@@ -24,5 +25,10 @@ public class FunctionCallNode extends ExpressionNode{
 
     public String getName() {
         return this.getToken().getValue();
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

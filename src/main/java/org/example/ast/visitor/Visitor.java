@@ -3,7 +3,6 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 
 public interface Visitor {
-    void visit(BaseNode node);
     void visit(AssignmentNode node);
     void visit(BinaryOpNode node);
     void visit(BlockNode node);
@@ -18,4 +17,5 @@ public interface Visitor {
     void visit(TypeSpecifierNode node);
     void visit(VariableDefNode node);
     void visit(StatementNode node);
+    void visit(PrimaryGuardNode node);
 }

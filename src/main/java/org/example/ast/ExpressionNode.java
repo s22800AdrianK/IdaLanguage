@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 import org.example.token.TokenType;
 import org.example.type.Type;
@@ -15,5 +16,10 @@ public abstract class ExpressionNode extends  StatementNode {
     }
     public void setEvalType(Type evalType) {
         this.evalType = evalType;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

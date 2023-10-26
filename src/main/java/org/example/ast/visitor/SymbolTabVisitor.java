@@ -4,10 +4,10 @@ import org.example.ast.*;
 import org.example.scope.Scope;
 import org.example.scope.SymbolTable;
 
+import java.util.List;
+
 public class SymbolTabVisitor implements Visitor{
     private Scope currentScope = new SymbolTable();
-    @Override
-    public void visit(BaseNode node) {}
 
     @Override
     public void visit(AssignmentNode node) {
@@ -16,7 +16,8 @@ public class SymbolTabVisitor implements Visitor{
 
     @Override
     public void visit(BinaryOpNode node) {
-
+            node.getLeft().visit(this);
+            node.getRight().visit(this);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class SymbolTabVisitor implements Visitor{
 
     @Override
     public void visit(ProgramNode node) {
-
+            node.getStatements().forEach(n->n.visit(this));
     }
 
     @Override
@@ -71,11 +72,16 @@ public class SymbolTabVisitor implements Visitor{
 
     @Override
     public void visit(VariableDefNode node) {
-
+            //currentScope.defineSymbol(node.getVariable().getName(),node.getVariable().getTypes());
     }
 
     @Override
     public void visit(StatementNode node) {
+
+    }
+
+    @Override
+    public void visit(PrimaryGuardNode node) {
 
     }
 }

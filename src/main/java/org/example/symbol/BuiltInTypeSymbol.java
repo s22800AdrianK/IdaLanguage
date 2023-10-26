@@ -7,5 +7,4 @@ public class BuiltInTypeSymbol extends Symbol implements Type {
         super(name);
     }
 
-
 }

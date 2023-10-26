@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.ast.visitor.SetVarTypesVisitor;
 import org.example.lexer.IdaLexer;
 import org.example.lexer.Lexer;
 import org.example.parser.IdaParser;
@@ -15,6 +16,8 @@ public class Main {
                 """.trim();
         Lexer lexer = new IdaLexer(input);
         IdaParser parser = new IdaParser(lexer,2);
-        parser.program();
+        var tree = parser.program();
+        SetVarTypesVisitor visitor = new SetVarTypesVisitor();
+        tree.visit(visitor);
     }
 }

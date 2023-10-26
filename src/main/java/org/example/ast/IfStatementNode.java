@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 import java.util.Optional;
@@ -29,10 +30,15 @@ public class IfStatementNode extends StatementNode{
     }
 
     public Optional<BlockNode> getElseBlock() {
-        return Optional.of(elseBlock);
+        return Optional.ofNullable(elseBlock);
     }
 
     public void setElseBlock(BlockNode elseBlock) {
         this.elseBlock = elseBlock;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

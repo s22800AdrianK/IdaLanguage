@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 public class TypeSpecifierNode extends BaseNode {
@@ -8,5 +9,10 @@ public class TypeSpecifierNode extends BaseNode {
     }
     public String getTypeName() {
         return this.getToken().getValue();
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }

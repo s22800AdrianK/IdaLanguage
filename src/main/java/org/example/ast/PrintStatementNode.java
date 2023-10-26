@@ -1,5 +1,6 @@
 package org.example.ast;
 
+import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 
 public class PrintStatementNode extends StatementNode{
@@ -12,5 +13,10 @@ public class PrintStatementNode extends StatementNode{
     }
     public void setExpression(ExpressionNode expression) {
         this.expression = expression;
+    }
+
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
     }
 }
