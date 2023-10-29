@@ -18,6 +18,9 @@ public class SymbolTabVisitorImpl implements Visitor {
 
     @Override
     public void visit(AssignmentNode node) {
+        if(!currentScope.checkIfAlreadyDefined(node.getVariableName())){
+            throw new RuntimeException("VARIABLE NOT DEFINED");
+        }
         node.getExpression().visit(this);
     }
 

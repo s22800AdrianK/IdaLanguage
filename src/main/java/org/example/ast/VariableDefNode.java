@@ -14,7 +14,7 @@ public class VariableDefNode extends StatementNode {
     }
 
     public Optional<ExpressionNode> getInitializer() {
-        return Optional.of(initializer);
+        return Optional.ofNullable(initializer);
     }
 
     public void setInitializer(ExpressionNode initializer) {
