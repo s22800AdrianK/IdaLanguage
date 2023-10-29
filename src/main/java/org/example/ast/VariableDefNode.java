@@ -8,12 +8,15 @@ import java.util.Optional;
 public class VariableDefNode extends StatementNode {
     private ExpressionNode initializer;
     private ParameterNode variable;
+
     public VariableDefNode(Token token) {
         super(token);
     }
+
     public Optional<ExpressionNode> getInitializer() {
         return Optional.of(initializer);
     }
+
     public void setInitializer(ExpressionNode initializer) {
         this.initializer = initializer;
     }

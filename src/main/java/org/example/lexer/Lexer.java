@@ -12,8 +12,9 @@ public abstract class Lexer {
     }
 
     public String getNext() {
-        return isEmpty()? null : input.substring(positionOfCurrent);
+        return isEmpty() ? null : input.substring(positionOfCurrent);
     }
+
     public abstract Token nextToken();
 
     public boolean isEmpty() {
@@ -30,7 +31,7 @@ public abstract class Lexer {
 
 
     public void advance(int moveIndex) {
-        positionOfCurrent+= moveIndex;
+        positionOfCurrent += moveIndex;
         if (positionOfCurrent >= input.length()) {
             isEmpty = true;
         }

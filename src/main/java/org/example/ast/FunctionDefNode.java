@@ -6,11 +6,12 @@ import org.example.token.Token;
 
 import java.util.List;
 
-public class FunctionDefNode extends StatementNode{
+public class FunctionDefNode extends StatementNode {
     private List<ParameterNode> parameters;
     private TypeSpecifierNode returnType;
     private BlockNode body;
     private FunctionSymbol functionSymbol;
+
     public FunctionDefNode(Token token) {
         super(token);
     }

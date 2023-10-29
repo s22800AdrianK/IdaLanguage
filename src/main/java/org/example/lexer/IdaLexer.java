@@ -2,10 +2,11 @@ package org.example.lexer;
 
 import org.example.token.Token;
 import org.example.token.TokenType;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IdaLexer extends Lexer{
+public class IdaLexer extends Lexer {
 
     public IdaLexer(String input) {
         super(input);
@@ -13,14 +14,14 @@ public class IdaLexer extends Lexer{
 
     @Override
     public Token nextToken() {
-        if(isEmpty()) {
-            return new Token(TokenType.EOF_TYPE,"<EOF>");
+        if (isEmpty()) {
+            return new Token(TokenType.EOF_TYPE, "<EOF>");
         }
 
-        for (TokenType token: TokenType.values()) {
+        for (TokenType token : TokenType.values()) {
             Pattern pattern = Pattern.compile("^(" + token.getRegex() + ")");
             Matcher matcher = pattern.matcher(getNext());
-            if(matcher.find()) {
+            if (matcher.find()) {
                 String match = matcher.group();
                 advance(match.length());
                 if (token != TokenType.WHITESPACE) {
@@ -28,13 +29,13 @@ public class IdaLexer extends Lexer{
                 }
             }
         }
-        throw new RuntimeException("unexpected sign at position: "+getPositionOfCurrent()+","+getInput().charAt(getPositionOfCurrent()));
+        throw new RuntimeException("unexpected sign at position: " + getPositionOfCurrent() + "," + getInput().charAt(getPositionOfCurrent()));
     }
 
-    private Token createToken(String match,TokenType tokenType){
-        return tokenType!=TokenType.STRING?
-                new Token(tokenType,match) :
-                new Token(tokenType,match.substring(1,match.length()-1).replace("\\\"","\""));
+    private Token createToken(String match, TokenType tokenType) {
+        return tokenType != TokenType.STRING ?
+                new Token(tokenType, match) :
+                new Token(tokenType, match.substring(1, match.length() - 1).replace("\\\"", "\""));
 
     }
 }

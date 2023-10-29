@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class FunctionCallNode extends ExpressionNode{
+public class FunctionCallNode extends ExpressionNode {
 
     private final List<ExpressionNode> arguments;
+
     public FunctionCallNode(Token token) {
         super(token);
         this.arguments = new ArrayList<>();

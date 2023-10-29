@@ -5,7 +5,7 @@ import org.example.token.Token;
 
 import java.util.Optional;
 
-public class IfStatementNode extends StatementNode{
+public class IfStatementNode extends StatementNode {
     private ExpressionNode condition;
     private BlockNode thenBlock;
     private BlockNode elseBlock;
@@ -13,6 +13,7 @@ public class IfStatementNode extends StatementNode{
     public IfStatementNode(Token token) {
         super(token);
     }
+
     public ExpressionNode getCondition() {
         return condition;
     }

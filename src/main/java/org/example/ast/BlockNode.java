@@ -7,16 +7,19 @@ import org.example.token.Token;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockNode extends StatementNode{
+public class BlockNode extends StatementNode {
     private final List<StatementNode> statements;
     private LocalScope scope;
+
     public BlockNode(Token token) {
         super(token);
         this.statements = new ArrayList<>();
     }
+
     public List<StatementNode> getStatements() {
         return statements;
     }
+
     public void addStatement(StatementNode statementNode) {
         statements.add(statementNode);
     }

@@ -17,6 +17,7 @@ public abstract class Parser {
         lookahead = new Token[this.bufferSize];
         feedBuffer();
     }
+
     private void feedBuffer() {
         for (var a : lookahead) {
             consume();
@@ -25,17 +26,21 @@ public abstract class Parser {
 
     protected void consume() {
         lookahead[position] = input.nextToken();
-        position = (position+1)%bufferSize;
+        position = (position + 1) % bufferSize;
     }
+
     protected Token LT(int i) {
-        return lookahead[(position+i-1)%bufferSize];
+        return lookahead[(position + i - 1) % bufferSize];
     }
+
     protected TokenType LA(int i) {
         return LT(i).getType();
     }
+
     protected void match(TokenType x) {
-        if(LA(1) == x) consume();
-        else throw new RuntimeException("expecting "+x+"; found "+LT(1));
+        if (LA(1) == x) consume();
+        else throw new RuntimeException("expecting " + x + "; found " + LT(1));
     }
+
     public abstract ProgramNode program();
 }

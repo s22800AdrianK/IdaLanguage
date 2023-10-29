@@ -6,9 +6,10 @@ import org.example.type.Type;
 
 import java.util.List;
 
-public class ParameterNode extends BaseNode{
+public class ParameterNode extends BaseNode {
     private List<Type> types;
     private ExpressionNode guardExpression;
+
     public ParameterNode(Token token) {
         super(token);
     }

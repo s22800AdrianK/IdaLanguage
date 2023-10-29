@@ -1,5 +1,5 @@
 package org.example.type;
 
-public interface Type {
+public interface Type  {
     String getName();
 }
