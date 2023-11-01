@@ -1,6 +1,8 @@
 package org.example.parser;
 
 import org.example.ast.*;
+import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.primaryex.PrimaryExNode;
 import org.example.lexer.Lexer;
 import org.example.token.Token;
 import org.example.token.TokenType;
@@ -282,9 +284,14 @@ public class IdaParser extends Parser {
         if (LA(1) == TokenType.NAME) {
             function.setParameters(parameters());
         }
-        match(TokenType.R_BRACK);
-        match(TokenType.COLON);
-        function.setReturnType(typeSpecifier());
+        if(LA(1)==TokenType.R_BRACK){
+            match(TokenType.R_BRACK);
+            match(TokenType.COLON);
+            function.setReturnType(typeSpecifier());
+        }else {
+            function.setReturnType(null);
+        }
+
         function.setBody(block());
         return function;
     }

@@ -4,14 +4,14 @@ import org.example.ast.*;
 import org.example.ast.binaryop.BinaryOpNode;
 import org.example.ast.primaryex.PrimaryExNode;
 
-public interface Visitor {
+public interface SymbolTableVisitor extends Visitor{
     void visit(AssignmentNode node);
 
     void visit(BinaryOpNode node);
 
     void visit(BlockNode node);
 
-    void visit(ExpressionNode node);
+    default void visit(ExpressionNode node){}
 
     void visit(FunctionCallNode node);
 
@@ -19,7 +19,7 @@ public interface Visitor {
 
     void visit(IfStatementNode node);
 
-    void visit(ParameterNode node);
+    default void visit(ParameterNode node){}
 
     void visit(PrimaryExNode node);
 
@@ -31,7 +31,7 @@ public interface Visitor {
 
     void visit(VariableDefNode node);
 
-    void visit(StatementNode node);
+    default void visit(StatementNode node){}
 
-    void visit(PrimaryGuardNode node);
+    default void visit(PrimaryGuardNode node){}
 }

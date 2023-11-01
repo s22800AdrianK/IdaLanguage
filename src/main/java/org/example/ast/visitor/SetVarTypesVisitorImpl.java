@@ -1,6 +1,7 @@
 package org.example.ast.visitor;
 
 import org.example.ast.*;
+import org.example.ast.binaryop.BinaryOpNode;
 import org.example.scope.SymbolTable;
 import org.example.type.Type;
 
@@ -36,9 +37,14 @@ public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
     @Override
     public void visit(ParameterNode node) {
         node.getGuardExpression().visit(this);
-        List<Type> a = this.types.stream().map(e -> currentScope.getBuliInTypeForName(e.getToken().getValue())).toList();
-        this.types = new ArrayList<>();
-        node.setTypes(a);
+        List<Type> a = this.types.stream()
+                .map(e -> currentScope.getBuliInTypeForName(e.getToken().getValue()))
+                .distinct()
+                .toList();
+        if(a.size()>1){
+            throw new RuntimeException();
+        }
+        node.setTypes(a.get(0));
     }
 
     @Override

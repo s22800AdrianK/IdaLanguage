@@ -40,6 +40,14 @@ public class FunctionDefNode extends StatementNode {
         this.body = body;
     }
 
+    public FunctionSymbol getFunctionSymbol() {
+        return functionSymbol;
+    }
+
+    public void setFunctionSymbol(FunctionSymbol functionSymbol) {
+        this.functionSymbol = functionSymbol;
+    }
+
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);

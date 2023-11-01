@@ -7,7 +7,7 @@ import org.example.type.Type;
 import java.util.List;
 
 public class ParameterNode extends BaseNode {
-    private List<Type> types;
+    private Type type;
     private ExpressionNode guardExpression;
 
     public ParameterNode(Token token) {
@@ -26,12 +26,12 @@ public class ParameterNode extends BaseNode {
         this.guardExpression = guardExpression;
     }
 
-    public List<Type> getTypes() {
-        return types;
+    public Type getTypes() {
+        return type;
     }
 
-    public void setTypes(List<Type> types) {
-        this.types = types;
+    public void setTypes(Type type) {
+        this.type = type;
     }
 
     @Override

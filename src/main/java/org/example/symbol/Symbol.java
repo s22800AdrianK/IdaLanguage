@@ -2,17 +2,16 @@ package org.example.symbol;
 
 import org.example.type.Type;
 
-import java.util.HashSet;
-import java.util.List;
+
 import java.util.Objects;
 
 public class Symbol {
     private String name;
-    private List<Type> types;
+    private Type type;
 
-    public Symbol(String name, List<Type> type) {
+    public Symbol(String name, Type type) {
         this.name = name;
-        this.types = type;
+        this.type = type;
     }
 
     public Symbol(String name) {
@@ -27,12 +26,12 @@ public class Symbol {
         this.name = name;
     }
 
-    public List<Type> getType() {
-        return types;
+    public Type getType() {
+        return type;
     }
 
-    public void setType(List<Type> types) {
-        this.types = types;
+    public void setType(Type type) {
+        this.type = type;
     }
 
     @Override
@@ -40,13 +39,10 @@ public class Symbol {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Symbol symbol = (Symbol) o;
-        return Objects.equals(name, symbol.name)
-                && (types.size() == symbol.types.size())
-                && new HashSet<>(types).containsAll(symbol.types)
-                && new HashSet<>(symbol.types).containsAll(types);
+        return Objects.equals(name, symbol.name) && (Objects.equals(type.getName(), symbol.type.getName()));
     }
     @Override
     public int hashCode() {
-        return Objects.hash(name, types);
+        return Objects.hash(name, type);
     }
 }

@@ -4,6 +4,8 @@ import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 import org.example.type.Type;
 
+import java.util.List;
+
 public abstract class ExpressionNode extends StatementNode {
     private Type evalType;
 
@@ -19,8 +21,5 @@ public abstract class ExpressionNode extends StatementNode {
         this.evalType = evalType;
     }
 
-    @Override
-    public void visit(Visitor visitor) {
-        visitor.visit(this);
-    }
+
 }

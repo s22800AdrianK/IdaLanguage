@@ -1,5 +1,6 @@
-package org.example.ast;
+package org.example.ast.binaryop;
 
+import org.example.ast.ExpressionNode;
 import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 import org.example.token.TokenType;
@@ -31,8 +32,4 @@ public class BinaryOpNode extends ExpressionNode {
         this.right = right;
     }
 
-    @Override
-    public void visit(Visitor visitor) {
-        visitor.visit(this);
-    }
 }

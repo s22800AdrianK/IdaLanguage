@@ -1,5 +1,6 @@
-package org.example.ast;
+package org.example.ast.primaryex;
 
+import org.example.ast.ExpressionNode;
 import org.example.ast.visitor.Visitor;
 import org.example.token.Token;
 

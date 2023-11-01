@@ -1,18 +1,21 @@
 package org.example.symbol;
 
+import org.example.ast.BlockNode;
 import org.example.scope.Scope;
 import org.example.type.Type;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FunctionSymbol extends Symbol implements Scope {
-    private final List<Symbol> arguments = new ArrayList<>();
-    int a;
+    private final Map<List<Symbol>,BlockNode> implementations = new HashMap<>();
     private final Scope upperScope;
 
-    public FunctionSymbol(String name, List types, Scope upperScope) {
-        super(name, types);
+    public FunctionSymbol(String name, Type type,List<Symbol> arguments, BlockNode body, Scope upperScope) {
+        super(name, type);
+        implementations.put(arguments,body);
         this.upperScope = upperScope;
     }
 
@@ -23,21 +26,35 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     @Override
     public void defineSymbol(Symbol symbol) {
-        arguments.add(symbol);
+        throw new RuntimeException();
     }
 
     @Override
     public Symbol resolve(String name) {
-        return arguments.stream().filter(e -> e.getName().equals(name)).findFirst().orElseThrow(RuntimeException::new);
+        return implementations.keySet()
+                .stream().flatMap(Collection::stream)
+                .filter(e->e.getName().equals(name))
+                .findFirst()
+                .orElse(getUpperScope() != null ? getUpperScope().resolve(name) : null);
+    }
+
+    @Override
+    public List<FunctionSymbol> resolveFunctions() {
+        return List.of(this);
     }
 
     @Override
     public Type resolveType(String name) {
-        return arguments.stream()
-                .filter(e -> e.getName().equals(name)&&e instanceof Type)
+        return implementations.keySet()
+                .stream().flatMap(Collection::stream)
+                .filter(e->e.getName().equals(name)&&e instanceof Type)
                 .map(e->(Type)e)
                 .findFirst()
-                .orElseThrow(RuntimeException::new);
+                .orElse(getUpperScope() != null ? getUpperScope().resolveType(name) : null);
+    }
+
+    public void addNewImplementation(List<Symbol> args,BlockNode body) {
+        this.implementations.put(args,body);
     }
 
     @Override
@@ -51,4 +68,6 @@ public class FunctionSymbol extends Symbol implements Scope {
         }
         return false;
     }
+
+
 }

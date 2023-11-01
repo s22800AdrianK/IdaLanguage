@@ -1,6 +1,8 @@
 package org.example.ast.visitor;
 
 import org.example.ast.*;
+import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.primaryex.PrimaryExNode;
 import org.example.scope.LocalScope;
 import org.example.scope.Scope;
 import org.example.scope.SymbolTable;
@@ -10,10 +12,9 @@ import org.example.symbol.VarSymbol;
 import org.example.token.TokenType;
 import org.example.type.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SymbolTabVisitorImpl implements Visitor {
+public class SymbolTabVisitorImpl implements SymbolTableVisitor {
     private Scope currentScope = new SymbolTable();
 
     @Override
@@ -32,17 +33,16 @@ public class SymbolTabVisitorImpl implements Visitor {
 
     @Override
     public void visit(BlockNode node) {
-        currentScope = new LocalScope(this.currentScope);
+        LocalScope newScope = new LocalScope(this.currentScope);
+        currentScope = newScope;
+        node.setScope(newScope);
         node.getStatements().forEach(e->e.visit(this));
         currentScope = currentScope.getUpperScope();
     }
 
     @Override
-    public void visit(ExpressionNode node) {}
-
-    @Override
     public void visit(FunctionCallNode node) {
-            if(!currentScope.checkIfAlreadyDefined(node.getName())){
+            if(!(currentScope.resolve(node.getName()) instanceof FunctionSymbol)){
                 throw new RuntimeException();
             }
     }
@@ -50,10 +50,20 @@ public class SymbolTabVisitorImpl implements Visitor {
     @Override
     public void visit(FunctionDefNode node) {
         Type retType = currentScope.resolveType(node.getReturnType().getTypeName());
-        Symbol func = new FunctionSymbol(node.getToken().getValue(), List.of(retType),currentScope);
-        currentScope.defineSymbol(func);
-        currentScope = (Scope)func;
-        node.getParameters().forEach(p->currentScope.defineSymbol(new Symbol(p.getName(),p.getTypes())));
+        List<Symbol> args = node.getParameters().stream().map(e->new Symbol(e.getName(),e.getTypes())).toList();
+        FunctionSymbol func;
+        Symbol symbol = currentScope.resolve(node.getToken().getValue());
+        if((symbol instanceof FunctionSymbol existing)){
+            if(existing.getType().equals(retType)){
+                throw new RuntimeException("Function with the same name already exists but with a different return type");
+            }
+            func = existing;
+            func.addNewImplementation(args,node.getBody());
+        }else {
+            func = new FunctionSymbol(node.getToken().getValue(),retType,args,node.getBody(),currentScope);
+        }
+        currentScope = func;
+        node.setFunctionSymbol(func);
         node.getBody().visit(this);
         currentScope = currentScope.getUpperScope();
     }
@@ -65,13 +75,8 @@ public class SymbolTabVisitorImpl implements Visitor {
     }
 
     @Override
-    public void visit(ParameterNode node) {
-
-    }
-
-    @Override
     public void visit(PrimaryExNode node) {
-        if(node.getToken().getType()== TokenType.NAME && !currentScope.checkIfAlreadyDefined(node.getValue())){
+        if(node.getToken().getType()==TokenType.NAME && !currentScope.checkIfAlreadyDefined(node.getValue())){
             throw new RuntimeException("variable not defined");
         }
     }
@@ -103,13 +108,4 @@ public class SymbolTabVisitorImpl implements Visitor {
         node.getInitializer().ifPresent(e->e.visit(this));
     }
 
-    @Override
-    public void visit(StatementNode node) {
-
-    }
-
-    @Override
-    public void visit(PrimaryGuardNode node) {
-
-    }
 }
