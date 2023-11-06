@@ -1,18 +1,32 @@
 package org.example.ast.visitor;
 
 import org.example.ast.*;
-import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.BinaryOpNode;
 import org.example.ast.primaryex.PrimaryExNode;
+import org.example.exceptions.ArgumentTypeMismatch;
+import org.example.exceptions.ImplementationArgumentNumberException;
 import org.example.scope.Scope;
 import org.example.scope.SymbolTable;
+import org.example.symbol.FunctionSymbol;
+import org.example.symbol.Symbol;
+import org.example.type.Type;
+import org.example.type.TypeResolver;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
+public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
+
+    private final TypeResolver typeResolver;
     private Scope currentScope;
-    public ExpressionTypesVisitorImpl(SymbolTable symbolTable) {
+
+    public ExpressionTypesVisitorImpl(TypeResolver typeResolver, SymbolTable symbolTable) {
+        this.typeResolver = typeResolver;
         currentScope = symbolTable;
     }
+
     @Override
     public void visit(AssignmentNode node) {
 
@@ -20,22 +34,24 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
 
     @Override
     public void visit(BinaryOpNode node) {
-        ExpressionNode left  = node.getLeft();
+        ExpressionNode left = node.getLeft();
         ExpressionNode right = node.getRight();
         left.visit(this);
         right.visit(this);
-            switch (node.getOperator()) {
-                case ADD -> setAddOperatorReturnType(left,right);
-            }
-    }
-
-    private void setAddOperatorReturnType(ExpressionNode left, ExpressionNode right) {
-
+        Type ret = typeResolver.getEvalType(node.getOperator(), left.getEvalType(), right.getEvalType());
+        if (ret == null) {
+            throw new RuntimeException(
+                    "operator:" + node.getOperator() + "not allowed for:" + left.getEvalType() + " and " + right.getEvalType()
+            );
+        }
+        node.setEvalType(ret);
     }
 
     @Override
     public void visit(BlockNode node) {
-        node.getStatements().forEach(e->e.visit(this));
+        currentScope = node.getScope();
+        node.getStatements().forEach(e -> e.visit(this));
+        currentScope = currentScope.getUpperScope();
     }
 
     @Override
@@ -45,7 +61,18 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
 
     @Override
     public void visit(FunctionCallNode node) {
-            node.setEvalType(currentScope.resolveType(node.getName()));
+        node.getArguments().forEach(e->e.visit(this));
+
+        FunctionSymbol fn = (FunctionSymbol)currentScope.resolve(node.getName());
+        List<Symbol> argList= fn.getImplementations().keySet().stream().toList().get(0);
+        boolean typesMatch = IntStream.range(0,argList.size())
+                        .allMatch(i->argList.get(i).getType().equals(node.getArguments().get(i).getEvalType()));
+
+        if(typesMatch) {
+            throw new RuntimeException();
+        }
+
+        node.setEvalType(currentScope.resolveType(node.getName()));
     }
 
     @Override
@@ -61,6 +88,29 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
         if (hasWrongReturnDeclaration(node)) {
             throw new RuntimeException("Wrong return declaration");
         }
+
+        var implementations = node.getFunctionSymbol().getImplementations();
+
+        Set<Integer> sizes = implementations.keySet().stream()
+                .map(List::size)
+                .collect(Collectors.toSet());
+
+        if(sizes.size()!=1) {
+            throw new ImplementationArgumentNumberException(node.getToken().getValue());
+        }
+
+        boolean typesMatch = IntStream.range(0,sizes.size())
+                .allMatch(i-> implementations.keySet()
+                                    .stream().map(list->list.get(i).getType())
+                                    .distinct()
+                                    .limit(2)
+                                    .count()==1
+                );
+
+        if(typesMatch) {
+            throw new ArgumentTypeMismatch(node.getToken().getValue());
+        }
+
 
         currentScope = currentScope.getUpperScope();
     }
@@ -92,6 +142,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
     public void visit(ParameterNode node) {
 
     }
+
     @Override
     public void visit(PrimaryExNode node) {
         switch (node.getToken().getType()) {
@@ -103,14 +154,13 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
     }
 
     @Override
-    public void visit(PrintStatementNode node) {
-
-    }
+    public void visit(PrintStatementNode node) {}
 
     @Override
     public void visit(ProgramNode node) {
-        node.getStatements().forEach(e->e.visit(this));
+        node.getStatements().forEach(e -> e.visit(this));
     }
+
     @Override
     public void visit(TypeSpecifierNode node) {
         node.setType(currentScope.resolveType(node.getTypeName()));
@@ -118,16 +168,19 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor{
 
     @Override
     public void visit(VariableDefNode node) {
-
+            node.getInitializer().ifPresent(e->{
+                e.visit(this);
+                if(!node.getVariable().getTypes().equals(e.getEvalType())){
+                    throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getTypes());
+                }
+            });
     }
 
     @Override
-    public void visit(StatementNode node) {
-
-    }
+    public void visit(StatementNode node) {}
 
     @Override
     public void visit(PrimaryGuardNode node) {
-
+        node.setEvalType(currentScope.resolveType(node.getToken().getValue()));
     }
 }

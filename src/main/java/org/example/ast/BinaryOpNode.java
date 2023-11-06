@@ -1,4 +1,4 @@
-package org.example.ast.binaryop;
+package org.example.ast;
 
 import org.example.ast.ExpressionNode;
 import org.example.ast.visitor.Visitor;
@@ -31,5 +31,8 @@ public class BinaryOpNode extends ExpressionNode {
     public void setRight(ExpressionNode right) {
         this.right = right;
     }
-
+    @Override
+    public void visit(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

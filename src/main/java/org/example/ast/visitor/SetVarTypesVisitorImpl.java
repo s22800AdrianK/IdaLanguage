@@ -1,7 +1,8 @@
 package org.example.ast.visitor;
 
 import org.example.ast.*;
-import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.BinaryOpNode;
+import org.example.exceptions.ToManyTypesInGuardException;
 import org.example.scope.SymbolTable;
 import org.example.type.Type;
 
@@ -10,12 +11,17 @@ import java.util.List;
 
 public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
     private List<PrimaryGuardNode> types = new ArrayList<>();
-    private final SymbolTable currentScope = new SymbolTable();
+    private final SymbolTable currentScope;
+
+    public SetVarTypesVisitorImpl(SymbolTable currentScope) {
+        this.currentScope = currentScope;
+    }
 
     @Override
     public void visit(BinaryOpNode node) {
         node.getLeft().visit(this);
         node.getRight().visit(this);
+
     }
 
     @Override
@@ -42,9 +48,10 @@ public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
                 .distinct()
                 .toList();
         if(a.size()>1){
-            throw new RuntimeException();
+            throw new ToManyTypesInGuardException(node.getName());
         }
         node.setTypes(a.get(0));
+        types.clear();
     }
 
     @Override

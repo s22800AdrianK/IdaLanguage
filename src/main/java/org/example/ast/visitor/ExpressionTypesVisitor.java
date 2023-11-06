@@ -1,7 +1,7 @@
 package org.example.ast.visitor;
 
 import org.example.ast.*;
-import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.BinaryOpNode;
 import org.example.ast.primaryex.PrimaryExNode;
 
 public interface ExpressionTypesVisitor extends Visitor {

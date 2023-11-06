@@ -69,5 +69,7 @@ public class FunctionSymbol extends Symbol implements Scope {
         return false;
     }
 
-
+    public Map<List<Symbol>, BlockNode> getImplementations() {
+        return implementations;
+    }
 }

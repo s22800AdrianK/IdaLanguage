@@ -1,7 +1,7 @@
 package org.example.parser;
 
 import org.example.ast.*;
-import org.example.ast.binaryop.BinaryOpNode;
+import org.example.ast.BinaryOpNode;
 import org.example.ast.primaryex.PrimaryExNode;
 import org.example.lexer.Lexer;
 import org.example.token.Token;

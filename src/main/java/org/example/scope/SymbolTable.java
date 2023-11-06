@@ -1,6 +1,7 @@
 package org.example.scope;
 
 import org.example.symbol.BuiltInTypeSymbol;
+import org.example.token.TokenType;
 import org.example.type.Type;
 
 public class SymbolTable extends CoreScope {
@@ -10,9 +11,9 @@ public class SymbolTable extends CoreScope {
         initDefaultSymbols();
     }
     private void initDefaultSymbols() {
-        this.defineSymbol(new BuiltInTypeSymbol("num"));
-        this.defineSymbol(new BuiltInTypeSymbol("string"));
-        this.defineSymbol(new BuiltInTypeSymbol("bool"));
+        this.defineSymbol(new BuiltInTypeSymbol(TokenType.TYPE_NUMBER.getRegex()));
+        this.defineSymbol(new BuiltInTypeSymbol(TokenType.TYPE_STRING.getRegex()));
+        this.defineSymbol(new BuiltInTypeSymbol(TokenType.TYPE_BOOL.getRegex()));
     }
 
     public Type getBuliInTypeForName(String name) {

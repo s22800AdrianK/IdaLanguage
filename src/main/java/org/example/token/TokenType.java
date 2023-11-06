@@ -1,5 +1,7 @@
 package org.example.token;
 
+import java.util.EnumSet;
+
 public enum TokenType {
     WHITESPACE("\\s+|\\t+"),
     EOF_TYPE("<EOF>"),
@@ -35,14 +37,26 @@ public enum TokenType {
     OR("\\|\\|"),
     AND("&&"),
     QUOTATION("\"");
-
     private final String regex;
-
     TokenType(String regex) {
         this.regex = regex;
     }
-
     public String getRegex() {
         return regex;
     }
+    public static final EnumSet<TokenType> operators = EnumSet.of(
+            ADD,
+            MINUS,
+            MULT,
+            DEVID,
+            MODULO,
+            OP_EQUALS,
+            OP_NOT_EQUALS,
+            OP_SMALLER,
+            OP_GRATER,
+            OP_SMALLER_EQUAL,
+            OP_GRATER_EQUAL,
+            OR,
+            AND
+    );
 }
