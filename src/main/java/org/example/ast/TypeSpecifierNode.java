@@ -1,6 +1,7 @@
 package org.example.ast;
 
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 import org.example.type.Type;
 
@@ -23,5 +24,9 @@ public class TypeSpecifierNode extends BaseNode {
 
     public void setType(Type type) {
         this.type = type;
+    }
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

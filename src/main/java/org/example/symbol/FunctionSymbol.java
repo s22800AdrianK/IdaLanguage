@@ -4,10 +4,7 @@ import org.example.ast.BlockNode;
 import org.example.scope.Scope;
 import org.example.type.Type;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FunctionSymbol extends Symbol implements Scope {
     private final Map<List<Symbol>,BlockNode> implementations = new HashMap<>();
@@ -67,6 +64,22 @@ public class FunctionSymbol extends Symbol implements Scope {
             current = current.getUpperScope();
         }
         return false;
+    }
+
+    @Override
+    public List<Symbol> getAllSymbols() {
+        List<Symbol> allSymbols = new ArrayList<>();
+        Scope current = this;
+        while(current!=null){
+            allSymbols.addAll(current.getSymbols());
+            current = current.getUpperScope();
+        }
+        return allSymbols;
+    }
+
+    @Override
+    public List<Symbol> getSymbols() {
+        return implementations.keySet().stream().flatMap(List::stream).toList();
     }
 
     public Map<List<Symbol>, BlockNode> getImplementations() {

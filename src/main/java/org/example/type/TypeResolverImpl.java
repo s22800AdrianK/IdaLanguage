@@ -14,10 +14,10 @@ public class TypeResolverImpl implements TypeResolver{
         Type str = table.resolveType(TokenType.TYPE_STRING.getRegex());
         Type bool = table.resolveType(TokenType.TYPE_BOOL.getRegex());
 
-        putEvalType(TokenType.AND,num,num,num);
-        putEvalType(TokenType.AND,str,str,str);
-        putEvalType(TokenType.AND,num,str,str);
-        putEvalType(TokenType.AND,str,num,str);
+        putEvalType(TokenType.ADD,num,num,num);
+        putEvalType(TokenType.ADD,str,str,str);
+        putEvalType(TokenType.ADD,num,str,str);
+        putEvalType(TokenType.ADD,str,num,str);
 
         putEvalType(TokenType.MINUS,num,num,num);
 

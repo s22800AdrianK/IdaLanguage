@@ -1,7 +1,7 @@
-package org.example.ast.primaryex;
+package org.example.ast;
 
-import org.example.ast.ExpressionNode;
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 
 public class PrimaryExNode extends ExpressionNode {
@@ -16,5 +16,9 @@ public class PrimaryExNode extends ExpressionNode {
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

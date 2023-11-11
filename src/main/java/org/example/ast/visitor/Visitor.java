@@ -2,7 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
-import org.example.ast.primaryex.PrimaryExNode;
+import org.example.ast.PrimaryExNode;
 
 public interface Visitor {
     void visit(AssignmentNode node);

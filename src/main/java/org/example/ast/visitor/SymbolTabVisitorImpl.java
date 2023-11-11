@@ -2,7 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
-import org.example.ast.primaryex.PrimaryExNode;
+import org.example.ast.PrimaryExNode;
 import org.example.exceptions.NotAFunctionException;
 import org.example.exceptions.TypeNotDefinedException;
 import org.example.exceptions.VariableAlreadyDefinedException;
@@ -16,6 +16,7 @@ import org.example.token.TokenType;
 import org.example.type.Type;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SymbolTabVisitorImpl implements SymbolTableVisitor {
     private Scope currentScope;
@@ -56,12 +57,12 @@ public class SymbolTabVisitorImpl implements SymbolTableVisitor {
 
     @Override
     public void visit(FunctionDefNode node) {
-        Type retType = currentScope.resolveType(node.getReturnType().getTypeName());
-        List<Symbol> args = node.getParameters().stream().map(e->new Symbol(e.getName(),e.getTypes())).toList();
+        Type retType = currentScope.resolveType(node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null));
+        List<Symbol> args = node.getParameters().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getTypes(),e.getGuardExpression().orElse(null))).toList();
         FunctionSymbol func;
         Symbol symbol = currentScope.resolve(node.getToken().getValue());
         if((symbol instanceof FunctionSymbol existing)){
-            if(existing.getType().equals(retType)){
+            if(!Objects.equals(existing.getType(),retType)){
                 throw new RuntimeException("Function with the same name already exists but with a different return type");
             }
             func = existing;
@@ -69,6 +70,7 @@ public class SymbolTabVisitorImpl implements SymbolTableVisitor {
         }else {
             func = new FunctionSymbol(node.getToken().getValue(),retType,args,node.getBody(),currentScope);
         }
+        currentScope.defineSymbol(func);
         currentScope = func;
         node.setFunctionSymbol(func);
         node.getBody().visit(this);
@@ -107,7 +109,7 @@ public class SymbolTabVisitorImpl implements SymbolTableVisitor {
 
     @Override
     public void visit(VariableDefNode node) {
-        Symbol var = new VarSymbol(node.getVariable().getName(),node.getVariable().getTypes());
+        Symbol var = new VarSymbol(node.getVariable().getName(),node.getVariable().getTypes(), node.getVariable().getGuardExpression().orElse(null));
         if(currentScope.checkIfAlreadyDefined(var.getName())){
             throw new VariableAlreadyDefinedException(node.getVariable().getName());
         }

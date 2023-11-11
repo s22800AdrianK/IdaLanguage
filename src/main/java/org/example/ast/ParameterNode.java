@@ -1,15 +1,17 @@
 package org.example.ast;
 
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 import org.example.type.Type;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ParameterNode extends BaseNode {
     private Type type;
     private ExpressionNode guardExpression;
-
+    private TypeSpecifierNode typeSpecifierNode;
     public ParameterNode(Token token) {
         super(token);
     }
@@ -18,8 +20,8 @@ public class ParameterNode extends BaseNode {
         return this.getToken().getValue();
     }
 
-    public ExpressionNode getGuardExpression() {
-        return guardExpression;
+    public Optional<ExpressionNode> getGuardExpression() {
+        return Optional.ofNullable(guardExpression);
     }
 
     public void setGuardExpression(ExpressionNode guardExpression) {
@@ -34,8 +36,20 @@ public class ParameterNode extends BaseNode {
         this.type = type;
     }
 
+    public TypeSpecifierNode getTypeSpecifierNode() {
+        return typeSpecifierNode;
+    }
+
+    public void setTypeSpecifierNode(TypeSpecifierNode typeSpecifierNode) {
+        this.typeSpecifierNode = typeSpecifierNode;
+    }
+
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

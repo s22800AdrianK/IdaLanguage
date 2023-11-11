@@ -2,7 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
-import org.example.ast.primaryex.PrimaryExNode;
+import org.example.ast.PrimaryExNode;
 
 public interface SetVarTypesVisitor extends Visitor {
     default void visit(AssignmentNode node) {
@@ -15,8 +15,7 @@ public interface SetVarTypesVisitor extends Visitor {
     default void visit(ExpressionNode node) {
     }
 
-    default void visit(FunctionCallNode node) {
-    }
+    default void visit(FunctionCallNode node) {}
 
     void visit(FunctionDefNode node);
 

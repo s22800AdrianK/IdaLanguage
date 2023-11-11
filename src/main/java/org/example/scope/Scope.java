@@ -13,4 +13,6 @@ public interface Scope {
     List<FunctionSymbol> resolveFunctions();
     Type   resolveType(String name);
     boolean checkIfAlreadyDefined(String name);
+    List<Symbol> getAllSymbols();
+    List<Symbol> getSymbols();
 }

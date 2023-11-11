@@ -1,10 +1,12 @@
 package org.example.ast;
 
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.symbol.FunctionSymbol;
 import org.example.token.Token;
 
 import java.util.List;
+import java.util.Optional;
 
 public class FunctionDefNode extends StatementNode {
     private List<ParameterNode> parameters;
@@ -24,8 +26,8 @@ public class FunctionDefNode extends StatementNode {
         this.parameters = parameters;
     }
 
-    public TypeSpecifierNode getReturnType() {
-        return returnType;
+    public Optional<TypeSpecifierNode> getReturnType() {
+        return Optional.ofNullable(returnType);
     }
 
     public void setReturnType(TypeSpecifierNode returnType) {
@@ -47,9 +49,12 @@ public class FunctionDefNode extends StatementNode {
     public void setFunctionSymbol(FunctionSymbol functionSymbol) {
         this.functionSymbol = functionSymbol;
     }
-
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

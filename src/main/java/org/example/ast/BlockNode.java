@@ -1,6 +1,7 @@
 package org.example.ast;
 
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.scope.LocalScope;
 import org.example.token.Token;
 
@@ -31,9 +32,12 @@ public class BlockNode extends StatementNode {
     public void setScope(LocalScope scope) {
         this.scope = scope;
     }
-
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);
+    }
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

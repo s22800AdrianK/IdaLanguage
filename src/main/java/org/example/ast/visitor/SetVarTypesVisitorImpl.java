@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
-    private List<PrimaryGuardNode> types = new ArrayList<>();
+    private final List<PrimaryGuardNode> types = new ArrayList<>();
     private final SymbolTable currentScope;
 
     public SetVarTypesVisitorImpl(SymbolTable currentScope) {
@@ -31,6 +31,7 @@ public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
 
     @Override
     public void visit(FunctionDefNode node) {
+        node.getParameters().forEach(e->e.visit(this));
         node.getBody().visit(this);
     }
 
@@ -42,7 +43,11 @@ public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
 
     @Override
     public void visit(ParameterNode node) {
-        node.getGuardExpression().visit(this);
+        if(node.getGuardExpression().isEmpty()) {
+            node.setTypes(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
+            return;
+        }
+        node.getGuardExpression().get().visit(this);
         List<Type> a = this.types.stream()
                 .map(e -> currentScope.getBuliInTypeForName(e.getToken().getValue()))
                 .distinct()

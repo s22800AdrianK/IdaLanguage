@@ -1,6 +1,7 @@
 package org.example.ast;
 
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 
 import java.util.Optional;
@@ -41,5 +42,10 @@ public class IfStatementNode extends StatementNode {
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
     }
 }

@@ -2,7 +2,7 @@ package org.example.parser;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
-import org.example.ast.primaryex.PrimaryExNode;
+import org.example.ast.PrimaryExNode;
 import org.example.lexer.Lexer;
 import org.example.token.Token;
 import org.example.token.TokenType;
@@ -83,6 +83,7 @@ public class IdaParser extends Parser {
         ifst.setCondition(expression());
         ifst.setThenBlock(block());
         if (LA(1) == TokenType.ELSE) {
+            match(TokenType.ELSE);
             ifst.setElseBlock(block());
         }
         return ifst;
@@ -284,8 +285,8 @@ public class IdaParser extends Parser {
         if (LA(1) == TokenType.NAME) {
             function.setParameters(parameters());
         }
-        if(LA(1)==TokenType.R_BRACK){
-            match(TokenType.R_BRACK);
+        match(TokenType.R_BRACK);
+        if(LA(1)==TokenType.COLON){
             match(TokenType.COLON);
             function.setReturnType(typeSpecifier());
         }else {
@@ -317,7 +318,7 @@ public class IdaParser extends Parser {
             parameterNode.setGuardExpression(expression());
             match(TokenType.R_BRACK);
         } else {
-            parameterNode.setGuardExpression(primaryExpressionGuard());
+            parameterNode.setTypeSpecifierNode(typeSpecifier());
         }
         this.currentMode = WorkMode.normal;
         return parameterNode;

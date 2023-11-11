@@ -50,6 +50,17 @@ public class CoreScope implements Scope {
         return false;
     }
 
+    @Override
+    public List<Symbol> getAllSymbols() {
+        List<Symbol> allSymbols = new ArrayList<>();
+        Scope current = this;
+        while(current!=null){
+            allSymbols.addAll(current.getSymbols());
+            current = current.getUpperScope();
+        }
+        return allSymbols;
+    }
+
     public List<Symbol> getSymbols() {
         return symbols;
     }

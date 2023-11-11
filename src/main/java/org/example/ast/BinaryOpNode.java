@@ -2,6 +2,7 @@ package org.example.ast;
 
 import org.example.ast.ExpressionNode;
 import org.example.ast.visitor.Visitor;
+import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 import org.example.token.TokenType;
 
@@ -35,4 +36,11 @@ public class BinaryOpNode extends ExpressionNode {
     public void visit(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public Object execute(IdaInterpreter interpreter) {
+        return interpreter.execute(this);
+    }
+
+
 }

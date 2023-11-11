@@ -2,7 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
-import org.example.ast.primaryex.PrimaryExNode;
+import org.example.ast.PrimaryExNode;
 import org.example.exceptions.ArgumentTypeMismatch;
 import org.example.exceptions.ImplementationArgumentNumberException;
 import org.example.scope.Scope;
@@ -41,7 +41,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
         Type ret = typeResolver.getEvalType(node.getOperator(), left.getEvalType(), right.getEvalType());
         if (ret == null) {
             throw new RuntimeException(
-                    "operator:" + node.getOperator() + "not allowed for:" + left.getEvalType() + " and " + right.getEvalType()
+                    "operator:" + node.getOperator() + "not allowed for:" + left.getEvalType().getName() + " and " + right.getEvalType().getName()
             );
         }
         node.setEvalType(ret);
@@ -55,20 +55,18 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     }
 
     @Override
-    public void visit(ExpressionNode node) {
-
-    }
+    public void visit(ExpressionNode node) {}
 
     @Override
     public void visit(FunctionCallNode node) {
         node.getArguments().forEach(e->e.visit(this));
 
         FunctionSymbol fn = (FunctionSymbol)currentScope.resolve(node.getName());
-        List<Symbol> argList= fn.getImplementations().keySet().stream().toList().get(0);
+        List<Symbol> argList = fn.getImplementations().keySet().stream().toList().get(0);
         boolean typesMatch = IntStream.range(0,argList.size())
                         .allMatch(i->argList.get(i).getType().equals(node.getArguments().get(i).getEvalType()));
 
-        if(typesMatch) {
+        if(!typesMatch) {
             throw new RuntimeException();
         }
 
@@ -79,9 +77,9 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     public void visit(FunctionDefNode node) {
         currentScope = node.getFunctionSymbol();
 
-        if (node.getReturnType() != null) {
-            node.getReturnType().visit(this);
-        }
+        node.getReturnType().ifPresent(e->e.visit(this));
+
+        node.getParameters().forEach(e->e.visit(this));
 
         node.getBody().visit(this);
 
@@ -107,7 +105,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
                                     .count()==1
                 );
 
-        if(typesMatch) {
+        if(!typesMatch) {
             throw new ArgumentTypeMismatch(node.getToken().getValue());
         }
 
@@ -116,10 +114,10 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     }
 
     private boolean hasWrongReturnDeclaration(FunctionDefNode node) {
-        if (node.getReturnType() != null) {
+        if (node.getReturnType().isPresent()) {
             ExpressionNode lastStatement = getLastStatement(node.getBody());
             if (lastStatement != null) {
-                return !lastStatement.getEvalType().equals(node.getReturnType().getType());
+                return !lastStatement.getEvalType().equals(node.getReturnType().get().getType());
             }
         }
         return false;
@@ -135,12 +133,14 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
 
     @Override
     public void visit(IfStatementNode node) {
-
+        node.getCondition().visit(this);
+        node.getThenBlock().visit(this);
+        node.getElseBlock().ifPresent(e->e.visit(this));
     }
 
     @Override
     public void visit(ParameterNode node) {
-
+        node.getGuardExpression().ifPresent(e->e.visit(this));
     }
 
     @Override
@@ -154,7 +154,9 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     }
 
     @Override
-    public void visit(PrintStatementNode node) {}
+    public void visit(PrintStatementNode node) {
+        node.getExpression().visit(this);
+    }
 
     @Override
     public void visit(ProgramNode node) {
@@ -174,6 +176,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
                     throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getTypes());
                 }
             });
+            node.getVariable().visit(this);
     }
 
     @Override
