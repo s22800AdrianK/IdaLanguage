@@ -74,4 +74,9 @@ public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
     public void visit(PrimaryGuardNode node) {
         types.add(node);
     }
+
+    @Override
+    public void visit(WhileStatementNode node) {
+        node.getThenBlock().visit(this);
+    }
 }

@@ -29,7 +29,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
 
     @Override
     public void visit(AssignmentNode node) {
-
+        node.getExpression().visit(this);
     }
 
     @Override
@@ -185,5 +185,11 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     @Override
     public void visit(PrimaryGuardNode node) {
         node.setEvalType(currentScope.resolveType(node.getToken().getValue()));
+    }
+
+    @Override
+    public void visit(WhileStatementNode node) {
+        node.getCondition().visit(this);
+        node.getThenBlock().visit(this);
     }
 }

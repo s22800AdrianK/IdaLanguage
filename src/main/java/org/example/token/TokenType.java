@@ -28,6 +28,7 @@ public enum TokenType {
     IF("if"),
     ELSE("else"),
     PRINT("print"),
+    WHILE("while"),
     TYPE_NUMBER("num"),
     TYPE_STRING("string"),
     TYPE_BOOL("bool"),

@@ -157,4 +157,12 @@ public class IdaInterpreterImpl implements IdaInterpreter {
     public Object execute(StatementNode node) {
         return null;
     }
+
+    @Override
+    public Object execute(WhileStatementNode node) {
+        while ((boolean)node.getCondition().execute(this)) {
+            node.getThenBlock().execute(this);
+        }
+        return null;
+    }
 }

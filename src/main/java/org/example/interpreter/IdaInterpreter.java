@@ -19,4 +19,5 @@ public interface IdaInterpreter {
     Object execute(TypeSpecifierNode node);
     Object execute(VariableDefNode node);
     Object execute(StatementNode node);
+    Object execute(WhileStatementNode node);
 }

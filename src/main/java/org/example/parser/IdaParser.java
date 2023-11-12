@@ -35,6 +35,7 @@ public class IdaParser extends Parser {
             case IF -> ifStatement();
             case PRINT -> printStatement();
             case L_C_BRACK -> block();
+            case WHILE -> whileStatement();
             default -> {
                 if (isExpressionStart(LA(1))) {
                     yield expressionStatement();
@@ -43,6 +44,14 @@ public class IdaParser extends Parser {
                 }
             }
         };
+    }
+
+    private StatementNode whileStatement() {
+        WhileStatementNode whileStatementNode = new WhileStatementNode(LT(1));
+        match(TokenType.WHILE);
+        whileStatementNode.setCondition(expression());
+        whileStatementNode.setThenBlock(block());
+        return whileStatementNode;
     }
 
     private BlockNode block() {

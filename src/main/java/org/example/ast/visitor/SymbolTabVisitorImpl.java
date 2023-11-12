@@ -116,5 +116,9 @@ public class SymbolTabVisitorImpl implements SymbolTableVisitor {
         currentScope.defineSymbol(var);
         node.getInitializer().ifPresent(e->e.visit(this));
     }
+    @Override
+    public void visit(WhileStatementNode node) {
+        node.getThenBlock().visit(this);
+    }
 
 }

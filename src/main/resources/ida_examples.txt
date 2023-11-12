@@ -1,0 +1,41 @@
+fn test(a:(num>5)) {
+  print "wartosc "+a+" jest wieksza od 5"
+}
+fn test(a:num) {
+  print "wartosc "+a+" nie jest wieksza od 5"
+}
+                
+test(6)
+                               
+print 10+20
+a:num = 5
+print a
+                
+fn loop(var:(num>0)) {
+  print "wartosc "+var
+  loop(var-1)
+}
+fn loop(var:(num==0)) {
+  print "koniec"
+}
+loop(7)               
+a = -5
+print a
+
+=================
+
+fn add(a:num,b:num):num {a+b}
+print add(4,4)
+
+=================
+
+fn fib(a:(num==0)):num { 0 }
+fn fib(a:(num==1)):num { 1 }
+fn fib(a:num):num { fib(a-1) + fib(a-2) }
+print fib(6)
+============================
+a:num = 0
+while a<5 {
+print "while loop "+a
+a = a+1
+}

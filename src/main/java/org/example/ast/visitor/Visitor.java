@@ -34,4 +34,6 @@ public interface Visitor {
     void visit(StatementNode node);
 
     void visit(PrimaryGuardNode node);
+
+    void visit(WhileStatementNode node);
 }

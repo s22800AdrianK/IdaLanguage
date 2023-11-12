@@ -12,12 +12,11 @@ import org.example.type.TypeResolverImpl;
 public class Main {
     public static void main(String[] args) {
         String input = """
-                fn fib(a:(num==0)):num { 0 }
-                fn fib(a:(num==1)):num { 1 }
-                fn fib(a:num):num { fib(a-1) + fib(a-2) }
-                print fib(6)
-                
-                
+                a:num = 0
+                while a<5 {
+                    print "while loop "+a
+                    a = a+1
+                }
                 """.trim();
         System.out.println();
         Lexer lexer = new IdaLexer(input);
