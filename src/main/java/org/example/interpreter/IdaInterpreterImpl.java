@@ -54,9 +54,14 @@ public class IdaInterpreterImpl implements IdaInterpreter {
     @Override
     public Object execute(BlockNode node) {
         memorySpace.pushScope(node.getScope());
-        node.getStatements().forEach(e->e.execute(this));
+        currentScope = node.getScope();
+        Object lastValue = null;
+        for (StatementNode e : node.getStatements()) {
+            lastValue = e.execute(this);
+        }
         memorySpace.pop();
-        return null;
+        currentScope = node.getScope().getUpperScope();
+        return lastValue;
     }
 
     @Override
@@ -83,19 +88,23 @@ public class IdaInterpreterImpl implements IdaInterpreter {
     @Override
     public Object execute(FunctionCallNode node) {
         FunctionSymbol fun = (FunctionSymbol) currentScope.resolve(node.getName());
+        var evaluatedArgs = node.getArguments().stream().map(e->e.execute(this)).toList();
         memorySpace.pushScope(fun);
         currentScope = fun;
-        Map.Entry<List<Symbol>,BlockNode> finalFun = evaluator.eval(fun,node.getArguments(),this,memorySpace);
+        Map.Entry<List<Symbol>,BlockNode> finalFun = evaluator.eval(fun,evaluatedArgs,this,memorySpace);
         if(finalFun == null) {
             throw new RuntimeException("AAAAAAAAAA");
         }
         IntStream.range(0,node.getArguments().size())
-                        .mapToObj(i->new AbstractMap.SimpleEntry<>(finalFun.getKey().get(i),node.getArguments().get(i)))
-                                .forEach(e-> memorySpace.setVariable(e.getKey().getName(),e.getValue().execute(this)));
-        finalFun.getValue().execute(this);
+                        .mapToObj(i->new AbstractMap.SimpleEntry<>(finalFun.getKey().get(i),evaluatedArgs.get(i)))
+                                .forEach(e-> memorySpace.setVariable(e.getKey().getName(),e.getValue()));
+        Object ret = null;
+        if(fun.getType()!=null) {
+            ret = finalFun.getValue().execute(this);
+        }
         memorySpace.pop();
-        currentScope = currentScope.getUpperScope();
-        return null;
+        currentScope = fun.getUpperScope();
+        return ret;
     }
 
     @Override

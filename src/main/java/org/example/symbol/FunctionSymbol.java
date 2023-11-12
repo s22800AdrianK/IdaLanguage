@@ -7,7 +7,7 @@ import org.example.type.Type;
 import java.util.*;
 
 public class FunctionSymbol extends Symbol implements Scope {
-    private final Map<List<Symbol>,BlockNode> implementations = new HashMap<>();
+    private final Map<List<Symbol>,BlockNode> implementations = new LinkedHashMap<>();
     private final Scope upperScope;
 
     public FunctionSymbol(String name, Type type,List<Symbol> arguments, BlockNode body, Scope upperScope) {

@@ -207,8 +207,13 @@ public class IdaParser extends Parser {
                 node = new PrimaryExNode(LT(1));
                 match(TokenType.NAME);
             }
-        } else if (LA(1) == TokenType.NUMBER) {
-            node = new PrimaryExNode(LT(1));
+        } else if (LA(1) == TokenType.NUMBER || (LA(1) == TokenType.MINUS && LA(2) == TokenType.NUMBER)) {
+            Token token = LT(1);
+            if(LA(1)==TokenType.MINUS) {
+                match(TokenType.MINUS);
+                token = new Token(TokenType.NUMBER,"-"+LT(1).getValue());
+            }
+            node = new PrimaryExNode(token);
             match(TokenType.NUMBER);
         } else if (LA(1) == TokenType.STRING) {
             node = new PrimaryExNode(LT(1));

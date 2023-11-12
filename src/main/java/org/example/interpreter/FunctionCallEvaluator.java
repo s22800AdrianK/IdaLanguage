@@ -11,21 +11,21 @@ import java.util.Map;
 
 public class FunctionCallEvaluator {
 
-    public Map.Entry<List<Symbol>,BlockNode> eval(FunctionSymbol fun, List<ExpressionNode> args, IdaInterpreter interpreter, MemorySpace space){
+    public Map.Entry<List<Symbol>,BlockNode> eval(FunctionSymbol fun, List<Object> evaluatedArgs, IdaInterpreter interpreter, MemorySpace space){
         return fun.getImplementations()
                 .entrySet()
                 .stream()
-                .filter(entry -> matchesArguments(entry.getKey(), args, interpreter, space))
+                .filter(entry -> matchesArguments(entry.getKey(), evaluatedArgs, interpreter, space))
                 .findFirst()
                 .orElse(null);
     }
 
 
-    private boolean matchesArguments(List<Symbol> parameters, List<ExpressionNode> args, IdaInterpreter interpreter, MemorySpace space) {
+    private boolean matchesArguments(List<Symbol> parameters, List<Object> evaluatedArgs, IdaInterpreter interpreter, MemorySpace space) {
 
         for (int i = 0; i < parameters.size(); i++) {
             VarSymbol var = (VarSymbol) parameters.get(i);
-            space.setVariable(var.getType().getName(), args.get(i).execute(interpreter));
+            space.setVariable(var.getType().getName(), evaluatedArgs.get(i));
             if (var.getGuardExpr().isPresent() && !evaluateGuardExpression(var.getGuardExpr().get(), interpreter)) {
                 return false;
             }

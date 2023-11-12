@@ -12,20 +12,18 @@ public class MemorySpaceImpl implements MemorySpace {
     private Deque<Map<String, Object>> stack = new LinkedList<>();
 
     public void setVariable(String name, Object value) {
-        for (Map<String, Object> scope : stack) {
-            if (scope.containsKey(name)) {
-                scope.put(name,value);
-            }
-        }
+        stack.stream()
+                .filter(s->s.containsKey(name))
+                .findFirst()
+                .ifPresent(s->s.put(name,value));
     }
 
     public Object getVariable(String name) {
-        for (Map<String, Object> scope : stack) {
-            if (scope.containsKey(name)) {
-                return scope.get(name);
-            }
-        }
-        return null;
+        return stack.stream()
+                .filter(s->s.containsKey(name))
+                .map(s->s.get(name))
+                .findFirst()
+                .orElse(null);
     }
 
 

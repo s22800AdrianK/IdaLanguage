@@ -5,7 +5,7 @@ import java.util.EnumSet;
 public enum TokenType {
     WHITESPACE("\\s+|\\t+"),
     EOF_TYPE("<EOF>"),
-    NUMBER("-?\\d+(\\.\\d+)?"),
+    NUMBER("\\d+(\\.\\d+)?"),
     STRING("\"(\\\\.|[^\\\\\"])*\""),
     BOOL("true|false"),
     ADD("\\+"),

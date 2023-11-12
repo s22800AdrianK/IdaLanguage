@@ -12,19 +12,14 @@ import org.example.type.TypeResolverImpl;
 public class Main {
     public static void main(String[] args) {
         String input = """
-                fn test(a:(num>5)) {
-                   print "wartosc "+a+" jest wieksza od 5"
-                }
-                fn test(a:num) {
-                   print "wartosc "+a+" nie jest wieksza od 5"
-                }
+                fn fib(a:(num==0)):num { 0 }
+                fn fib(a:(num==1)):num { 1 }
+                fn fib(a:num):num { fib(a-1) + fib(a-2) }
+                print fib(6)
                 
-                test(5)
                 
-                print 10+20
-                a:num = 5
-                print a
                 """.trim();
+        System.out.println();
         Lexer lexer = new IdaLexer(input);
         IdaParser parser = new IdaParser(lexer, 2);
         var tree = parser.program();

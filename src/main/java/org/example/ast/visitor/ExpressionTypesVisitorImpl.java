@@ -70,7 +70,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
             throw new RuntimeException();
         }
 
-        node.setEvalType(currentScope.resolveType(node.getName()));
+        node.setEvalType(fn.getType());
     }
 
     @Override
@@ -173,7 +173,7 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
             node.getInitializer().ifPresent(e->{
                 e.visit(this);
                 if(!node.getVariable().getTypes().equals(e.getEvalType())){
-                    throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getTypes());
+                    throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getTypes().getName());
                 }
             });
             node.getVariable().visit(this);
