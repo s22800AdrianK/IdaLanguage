@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 public class MemorySpaceImpl implements MemorySpace {
-    private Deque<Map<String, Object>> stack = new LinkedList<>();
+    private final Deque<Map<String, Object>> stack = new LinkedList<>();
 
     public void setVariable(String name, Object value) {
         stack.stream()

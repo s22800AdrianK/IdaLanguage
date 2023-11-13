@@ -101,6 +101,8 @@ public class IdaInterpreterImpl implements IdaInterpreter {
         Object ret = null;
         if(fun.getType()!=null) {
             ret = finalFun.getValue().execute(this);
+        }else {
+            finalFun.getValue().execute(this);
         }
         memorySpace.pop();
         currentScope = fun.getUpperScope();

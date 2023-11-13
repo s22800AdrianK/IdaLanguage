@@ -12,13 +12,16 @@ import org.example.type.TypeResolverImpl;
 public class Main {
     public static void main(String[] args) {
         String input = """
-                a:num = 0
-                while a<5 {
-                    print "while loop "+a
-                    a = a+1
-                }
+                    fn fib(a:(num==0)):num { 0 }
+                    fn fib(a:(num==1)):num { 1 }
+                    fn fib(a:num):num { fib(a-1) + fib(a-2) }
+                    print fib(2)
+                    
+                    a:num = - 10
+                    print (3/2)
+                    age:(num>18&&num<99)
+                    age = 12
                 """.trim();
-        System.out.println();
         Lexer lexer = new IdaLexer(input);
         IdaParser parser = new IdaParser(lexer, 2);
         var tree = parser.program();
