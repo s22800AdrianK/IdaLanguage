@@ -3,6 +3,7 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
+import org.example.handler.VisitorHandler;
 import org.example.exceptions.NotAFunctionException;
 import org.example.exceptions.TypeNotDefinedException;
 import org.example.exceptions.VariableAlreadyDefinedException;
@@ -18,7 +19,7 @@ import org.example.type.Type;
 import java.util.List;
 import java.util.Objects;
 
-public class SymbolTabVisitorImpl implements SymbolTableVisitor {
+public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableVisitor {
     private Scope currentScope;
 
     public SymbolTabVisitorImpl(Scope currentScope) {

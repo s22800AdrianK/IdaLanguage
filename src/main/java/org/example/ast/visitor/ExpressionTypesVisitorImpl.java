@@ -3,12 +3,14 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
+import org.example.handler.VisitorHandler;
 import org.example.exceptions.ArgumentTypeMismatch;
 import org.example.exceptions.ImplementationArgumentNumberException;
 import org.example.scope.Scope;
 import org.example.scope.SymbolTable;
 import org.example.symbol.FunctionSymbol;
 import org.example.symbol.Symbol;
+import org.example.token.TokenType;
 import org.example.type.Type;
 import org.example.type.TypeResolver;
 
@@ -17,8 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
-
+public class ExpressionTypesVisitorImpl extends VisitorHandler implements ExpressionTypesVisitor {
     private final TypeResolver typeResolver;
     private Scope currentScope;
 
@@ -146,9 +147,9 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
     @Override
     public void visit(PrimaryExNode node) {
         switch (node.getToken().getType()) {
-            case NUMBER -> node.setEvalType(currentScope.resolveType("num"));
-            case STRING -> node.setEvalType(currentScope.resolveType("string"));
-            case BOOL -> node.setEvalType(currentScope.resolveType("bool"));
+            case NUMBER -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_NUMBER.getRegex()));
+            case STRING -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_STRING.getRegex()));
+            case BOOL -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_BOOL.getRegex()));
             case NAME -> node.setEvalType(currentScope.resolve(node.getValue()).getType());
         }
     }
@@ -192,4 +193,5 @@ public class ExpressionTypesVisitorImpl implements ExpressionTypesVisitor {
         node.getCondition().visit(this);
         node.getThenBlock().visit(this);
     }
+
 }

@@ -2,6 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
+import org.example.handler.VisitorHandler;
 import org.example.exceptions.ToManyTypesInGuardException;
 import org.example.scope.SymbolTable;
 import org.example.type.Type;
@@ -9,9 +10,10 @@ import org.example.type.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetVarTypesVisitorImpl implements SetVarTypesVisitor {
+public class SetVarTypesVisitorImpl extends VisitorHandler implements SetVarTypesVisitor {
     private final List<PrimaryGuardNode> types = new ArrayList<>();
     private final SymbolTable currentScope;
+    private Visitor next;
 
     public SetVarTypesVisitorImpl(SymbolTable currentScope) {
         this.currentScope = currentScope;

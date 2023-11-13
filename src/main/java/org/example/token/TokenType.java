@@ -30,7 +30,7 @@ public enum TokenType {
     PRINT("print"),
     WHILE("while"),
     TYPE_NUMBER("num"),
-    TYPE_STRING("string"),
+    TYPE_STRING("str"),
     TYPE_BOOL("bool"),
     NAME("[a-zA-Z_][a-zA-Z_0-9]*"),
     COMMA(","),

@@ -1,39 +1,16 @@
 package org.example;
 
-import org.example.ast.visitor.*;
-import org.example.interpreter.*;
-import org.example.lexer.IdaLexer;
-import org.example.lexer.Lexer;
-import org.example.parser.IdaParser;
-import org.example.scope.SymbolTable;
-import org.example.type.TypeResolver;
-import org.example.type.TypeResolverImpl;
+
+
+import org.example.pipeline.IdaProcessingPipeline;
+
+import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) {
-        String input = """
-                    fn fib(a:(num==0)):num { 0 }
-                    fn fib(a:(num==1)):num { 1 }
-                    fn fib(a:num):num { fib(a-1) + fib(a-2) }
-                    print fib(2)
-                    
-                    a:num = - 10
-                    print (3/2)
-                    age:(num>18&&num<99)
-                    age = 12
-                """.trim();
-        Lexer lexer = new IdaLexer(input);
-        IdaParser parser = new IdaParser(lexer, 2);
-        var tree = parser.program();
-        SymbolTable table = new SymbolTable();
-        SetVarTypesVisitor visitor = new SetVarTypesVisitorImpl(table);
-        tree.visit(visitor);
-        SymbolTabVisitorImpl visitor1 = new SymbolTabVisitorImpl(table);
-        tree.visit(visitor1);
-        TypeResolver resolver = new TypeResolverImpl(table);
-        ExpressionTypesVisitor visitor2 = new ExpressionTypesVisitorImpl(resolver,table);
-        visitor2.visit(tree);
-        IdaInterpreter interpreter = new IdaInterpreterImpl(new MemorySpaceImpl(),new BinaryOperationEvaluator(table), new FunctionCallEvaluator(), table);
-        interpreter.execute(tree);
+    public static void main(String[] args) throws IOException {
+        if(args.length<1) {
+            throw new RuntimeException("Program requires file path");
+        }
+        new IdaProcessingPipeline(args[0]).run();
     }
 }
