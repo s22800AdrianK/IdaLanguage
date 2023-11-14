@@ -4,7 +4,7 @@ import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
 
-public interface SetVarTypesVisitor extends Visitor {
+public interface ValidateASTVisitor extends Visitor {
     default void visit(AssignmentNode node) {
     }
 

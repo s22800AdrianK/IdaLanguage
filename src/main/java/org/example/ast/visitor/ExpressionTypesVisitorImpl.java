@@ -63,9 +63,12 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         node.getArguments().forEach(e->e.visit(this));
 
         FunctionSymbol fn = (FunctionSymbol)currentScope.resolve(node.getName());
-        List<Symbol> argList = fn.getImplementations().keySet().stream().toList().get(0);
-        boolean typesMatch = IntStream.range(0,argList.size())
-                        .allMatch(i->argList.get(i).getType().equals(node.getArguments().get(i).getEvalType()));
+        List<Symbol> params = fn.getImplementations().keySet().stream().toList().get(0);
+        if(params.size()!=node.getArguments().size()) {
+            throw new RuntimeException("wrong number of call arguments");
+        }
+        boolean typesMatch = IntStream.range(0,params.size())
+                        .allMatch(i->params.get(i).getType().equals(node.getArguments().get(i).getEvalType()));
 
         if(!typesMatch) {
             throw new RuntimeException();
@@ -100,11 +103,12 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
         boolean typesMatch = IntStream.range(0,sizes.size())
                 .allMatch(i-> implementations.keySet()
-                                    .stream().map(list->list.get(i).getType())
+                                    .stream()
+                                    .filter(list -> list.size() > i)
+                                    .map(list->list.get(i).getType())
                                     .distinct()
                                     .limit(2)
-                                    .count()==1
-                );
+                                    .count()<=1);
 
         if(!typesMatch) {
             throw new ArgumentTypeMismatch(node.getToken().getValue());

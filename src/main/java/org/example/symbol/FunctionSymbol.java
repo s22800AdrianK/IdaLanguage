@@ -36,11 +36,6 @@ public class FunctionSymbol extends Symbol implements Scope {
     }
 
     @Override
-    public List<FunctionSymbol> resolveFunctions() {
-        return List.of(this);
-    }
-
-    @Override
     public Type resolveType(String name) {
         return implementations.keySet()
                 .stream().flatMap(Collection::stream)
@@ -64,17 +59,6 @@ public class FunctionSymbol extends Symbol implements Scope {
             current = current.getUpperScope();
         }
         return false;
-    }
-
-    @Override
-    public List<Symbol> getAllSymbols() {
-        List<Symbol> allSymbols = new ArrayList<>();
-        Scope current = this;
-        while(current!=null){
-            allSymbols.addAll(current.getSymbols());
-            current = current.getUpperScope();
-        }
-        return allSymbols;
     }
 
     @Override

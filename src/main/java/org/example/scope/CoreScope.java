@@ -26,11 +26,6 @@ public class CoreScope implements Scope {
     }
 
     @Override
-    public List<FunctionSymbol> resolveFunctions() {
-        return null;
-    }
-
-    @Override
     public Type resolveType(String name) {
         return symbols.stream()
                 .filter(e -> e.getName().equals(name)&&e instanceof Type)
@@ -48,17 +43,6 @@ public class CoreScope implements Scope {
             current = current.getUpperScope();
         }
         return false;
-    }
-
-    @Override
-    public List<Symbol> getAllSymbols() {
-        List<Symbol> allSymbols = new ArrayList<>();
-        Scope current = this;
-        while(current!=null){
-            allSymbols.addAll(current.getSymbols());
-            current = current.getUpperScope();
-        }
-        return allSymbols;
     }
 
     public List<Symbol> getSymbols() {

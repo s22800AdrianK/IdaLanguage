@@ -2,6 +2,7 @@ package org.example.ast.visitor;
 
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
+import org.example.exceptions.NonlegalStatementInStruct;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.ToManyTypesInGuardException;
 import org.example.scope.SymbolTable;
@@ -10,12 +11,13 @@ import org.example.type.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetVarTypesVisitorImpl extends VisitorHandler implements SetVarTypesVisitor {
+public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateASTVisitor {
     private final List<PrimaryGuardNode> types = new ArrayList<>();
     private final SymbolTable currentScope;
-    private Visitor next;
 
-    public SetVarTypesVisitorImpl(SymbolTable currentScope) {
+
+
+    public ValidateASTVisitorImpl(SymbolTable currentScope) {
         this.currentScope = currentScope;
     }
 
@@ -80,5 +82,15 @@ public class SetVarTypesVisitorImpl extends VisitorHandler implements SetVarType
     @Override
     public void visit(WhileStatementNode node) {
         node.getThenBlock().visit(this);
+    }
+
+    @Override
+    public void visit(StructureNode node) {
+        node.getBody().getStatements()
+                .stream()
+                .filter(st->!st.getClass().equals(VariableDefNode.class))
+                .findFirst()
+                .ifPresent(e->{throw new NonlegalStatementInStruct(node.getToken().getValue());});
+        node.getBody().visit(this);
     }
 }

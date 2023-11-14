@@ -12,7 +12,9 @@ statement
 	| printStatement
 	| whileStatement
 	| block
+	| structDefinition
 	;
+
 
 functionDefinition
 	: 'fn' NAME '('(parameter (',' parameter)*)? ')' (':' typeSpecifier)? block
@@ -23,8 +25,13 @@ block
     : '{' (statement)* '}'
     ;
 
+structDefinition
+    : 'st' NAME block
+    ;
+
 parameter
     :   NAME ':' typeSpecifier
+    :   NAME '(' expression ')'
     ;
 
 variableDefinition
@@ -33,6 +40,7 @@ variableDefinition
 
 assignmentStatement
     :   NAME '=' expression
+    |   fieldAccess '=' expression
     ;
 
 ifStatement
@@ -74,19 +82,24 @@ multiplicativeExpression
 primaryExpression
     : primary
     | functionCall
+    | fieldAccess
+    ;
+
+fieldAccess
+    : expression '.' NAME
     ;
 
 primary
     :   NAME
-    |   INT
-    |   FLOAT
-    |   STRING
+    |   NUM
+    |   STR
     |   '(' expression ')'
     ;
 
 functionCall
     : NAME '(' (expression (',' expression)*)? ')'
     ;
+
 
 typeSpecifier
     :   'int'
@@ -96,6 +109,6 @@ typeSpecifier
     ;
 
 NAME  :   [a-zA-Z_][a-zA-Z_0-9]*;
-INT   :   [0-9]+;
-FLOAT :   [0-9]+ '.' [0-9]+;
-STRING :  "\"(\.|[^\\"])*\"";
+NUM :     -?[0-9]+ '.' [0-9]+;
+STR :  "\"(\.|[^\\"])*\"";
+BOOL : 'true' | 'false'

@@ -1,8 +1,5 @@
-a:num = 5
-print a
-
-fn help(name:str) {
-    print name+" needs help"
+ifvar:num=3
+if ifvar>2 {
+  print "true"
 }
-
-help("Terry")
+print ifvar

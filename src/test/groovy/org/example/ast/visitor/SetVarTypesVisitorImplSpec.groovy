@@ -18,7 +18,7 @@ class SetVarTypesVisitorImplSpec extends Specification {
         given:
         SymbolTable symbolTable = Mock(SymbolTable)
         symbolTable.getBuliInTypeForName(_ as String) >> new BuiltInTypeSymbol("num")
-        SetVarTypesVisitorImpl typesVisitor = new SetVarTypesVisitorImpl(symbolTable)
+        ValidateASTVisitorImpl typesVisitor = new ValidateASTVisitorImpl(symbolTable)
         ProgramNode programNode = new ProgramNode()
         VariableDefNode defNode = new  VariableDefNode(new Token(TokenType.NAME,"a")).with {
             it.setVariable(

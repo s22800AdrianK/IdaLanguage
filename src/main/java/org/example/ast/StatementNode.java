@@ -9,12 +9,4 @@ public abstract class StatementNode extends BaseNode {
         super(token);
     }
 
-    @Override
-    public void visit(Visitor visitor) {
-        visitor.visit(this);
-    }
-    @Override
-    public Object execute(IdaInterpreter interpreter) {
-        return interpreter.execute(this);
-    }
 }

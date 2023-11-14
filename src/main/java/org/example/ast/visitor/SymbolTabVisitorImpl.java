@@ -11,6 +11,7 @@ import org.example.exceptions.VariableNotDefinedException;
 import org.example.scope.LocalScope;
 import org.example.scope.Scope;
 import org.example.symbol.FunctionSymbol;
+import org.example.symbol.StructureSymbol;
 import org.example.symbol.Symbol;
 import org.example.symbol.VarSymbol;
 import org.example.token.TokenType;
@@ -120,6 +121,20 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     @Override
     public void visit(WhileStatementNode node) {
         node.getThenBlock().visit(this);
+    }
+
+    @Override
+    public void visit(StructureNode node) {
+        if(currentScope.checkIfAlreadyDefined(node.getName())) {
+            throw new VariableAlreadyDefinedException(node.getName());
+        }
+
+        StructureSymbol struct = new StructureSymbol(node.getName(),currentScope);
+        currentScope.defineSymbol(struct);
+        currentScope = struct;
+        node.getBody().visit(this);
+        node.setSymbol(struct);
+        currentScope = currentScope.getUpperScope();
     }
 
 }

@@ -1,7 +1,7 @@
 package org.example.pipeline;
 
 import org.example.ast.visitor.ExpressionTypesVisitorImpl;
-import org.example.ast.visitor.SetVarTypesVisitorImpl;
+import org.example.ast.visitor.ValidateASTVisitorImpl;
 import org.example.ast.visitor.SymbolTabVisitorImpl;
 import org.example.handler.Handler;
 import org.example.interpreter.*;
@@ -36,7 +36,7 @@ public class IdaProcessingPipeline {
     }
 
     private void setUpHandlerChain() {
-        Handler setVarVisitor = new SetVarTypesVisitorImpl(symbolTable);
+        Handler setVarVisitor = new ValidateASTVisitorImpl(symbolTable);
         Handler symboTabVisitor = new SymbolTabVisitorImpl(symbolTable);
         TypeResolver resolver = new TypeResolverImpl(symbolTable);
         Handler expresionVisitor = new ExpressionTypesVisitorImpl(resolver,symbolTable);
