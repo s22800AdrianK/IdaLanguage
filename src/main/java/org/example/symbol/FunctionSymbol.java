@@ -1,6 +1,7 @@
 package org.example.symbol;
 
 import org.example.ast.BlockNode;
+import org.example.ast.TypeSpecifierNode;
 import org.example.scope.Scope;
 import org.example.type.Type;
 
@@ -9,11 +10,12 @@ import java.util.*;
 public class FunctionSymbol extends Symbol implements Scope {
     private final Map<List<Symbol>,BlockNode> implementations = new LinkedHashMap<>();
     private final Scope upperScope;
-
-    public FunctionSymbol(String name, Type type,List<Symbol> arguments, BlockNode body, Scope upperScope) {
-        super(name, type);
+    private final TypeSpecifierNode specifierNode;
+    public FunctionSymbol(String name, List<Symbol> arguments, TypeSpecifierNode specifier, BlockNode body, Scope upperScope) {
+        super(name);
         implementations.put(arguments,body);
         this.upperScope = upperScope;
+        this.specifierNode = specifier;
     }
 
     @Override
@@ -68,5 +70,9 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     public Map<List<Symbol>, BlockNode> getImplementations() {
         return implementations;
+    }
+
+    public TypeSpecifierNode getSpecifierNode() {
+        return specifierNode;
     }
 }

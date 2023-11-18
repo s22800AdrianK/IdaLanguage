@@ -31,7 +31,7 @@ public class FunctionCallEvaluator {
     }
 
 
-    private boolean matchesArguments(List<Symbol> parameters, List<Object> evaluatedArgs, MemorySpace space) {
+    public boolean matchesArguments(List<Symbol> parameters, List<Object> evaluatedArgs, MemorySpace space) {
 
         for (int i = 0; i < parameters.size(); i++) {
             VarSymbol var = (VarSymbol) parameters.get(i);
@@ -48,10 +48,6 @@ public class FunctionCallEvaluator {
         return node.getArguments().stream()
                 .map(arg -> arg.execute(interpreter))
                 .collect(Collectors.toList());
-    }
-
-    public Map.Entry<List<Symbol>, BlockNode> evaluateFunctionCall(FunctionSymbol functionSymbol, List<Object> evaluatedArgs) {
-        return eval(functionSymbol, evaluatedArgs, memorySpace);
     }
 
     public void assignArgumentsToParameters(Map.Entry<List<Symbol>, BlockNode> functionExecutionResult, List<Object> evaluatedArgs) {

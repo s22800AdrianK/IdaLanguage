@@ -13,19 +13,11 @@ import java.util.List;
 
 public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateASTVisitor {
     private final List<PrimaryGuardNode> types = new ArrayList<>();
-    private final SymbolTable currentScope;
-
-
-
-    public ValidateASTVisitorImpl(SymbolTable currentScope) {
-        this.currentScope = currentScope;
-    }
 
     @Override
     public void visit(BinaryOpNode node) {
         node.getLeft().visit(this);
         node.getRight().visit(this);
-
     }
 
     @Override
@@ -48,18 +40,13 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
     @Override
     public void visit(ParameterNode node) {
         if(node.getGuardExpression().isEmpty()) {
-            node.setTypes(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
             return;
         }
         node.getGuardExpression().get().visit(this);
-        List<Type> a = this.types.stream()
-                .map(e -> currentScope.getBuliInTypeForName(e.getToken().getValue()))
-                .distinct()
-                .toList();
-        if(a.size()>1){
+        if(types.size()>1){
             throw new ToManyTypesInGuardException(node.getName());
         }
-        node.setTypes(a.get(0));
+        node.setTypeSpecifierNode(new TypeSpecifierNode(types.get(0).getToken()));
         types.clear();
     }
 
@@ -88,9 +75,16 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
     public void visit(StructureNode node) {
         node.getBody().getStatements()
                 .stream()
-                .filter(st->!st.getClass().equals(VariableDefNode.class))
+                .filter(st->!st.getClass().equals(VariableDefNode.class) && !st.getClass().equals(FunctionDefNode.class))
                 .findFirst()
                 .ifPresent(e->{throw new NonlegalStatementInStruct(node.getToken().getValue());});
+        node.getConstructorParams().forEach(e->e.visit(this));
         node.getBody().visit(this);
+    }
+
+    @Override
+    public void visit(DotOpNode node) {
+        node.getLeft().visit(this);
+        node.getRight().visit(this);
     }
 }

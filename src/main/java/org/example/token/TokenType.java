@@ -59,6 +59,7 @@ public enum TokenType {
             OP_GRATER,
             OP_SMALLER_EQUAL,
             OP_GRATER_EQUAL,
+            OP_DOT,
             OR,
             AND
     );

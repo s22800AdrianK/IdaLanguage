@@ -13,7 +13,6 @@ public class Symbol {
         this.name = name;
         this.type = type;
     }
-
     public Symbol(String name) {
         this.name = name;
     }

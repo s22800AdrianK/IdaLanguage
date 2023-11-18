@@ -10,11 +10,14 @@ import java.util.Map;
 
 public class StructureSymbol extends Symbol implements Type, Scope {
     private final Map<String,Symbol> fields = new HashMap<>();
+    private final Map<String,FunctionSymbol> functions = new HashMap<>();
+    private final List<Symbol> constructorArgs;
     private final String name;
     private final Scope upperScope;
 
-    public StructureSymbol(String name, Scope upperScope) {
+    public StructureSymbol(List<Symbol> constructorArgs, String name, Scope upperScope) {
         super(name);
+        this.constructorArgs = constructorArgs;
         this.name = name;
         this.upperScope = upperScope;
     }
@@ -46,11 +49,33 @@ public class StructureSymbol extends Symbol implements Type, Scope {
 
     @Override
     public boolean checkIfAlreadyDefined(String name) {
-        return fields.containsKey(name);
+        if(fields.containsKey(name)){
+            return true;
+        }
+        if(functions.containsKey(name)){
+            return true;
+        }
+        return constructorArgs.stream().map(Symbol::getName).anyMatch(e -> e.equals(name)) || upperScope.checkIfAlreadyDefined(name);
     }
 
+    public boolean checkIfHasFieldOrFunction(String name) {
+        if(fields.containsKey(name)){
+            return true;
+        }
+        if(functions.containsKey(name)){
+            return true;
+        }
+        return constructorArgs.stream().map(Symbol::getName).anyMatch(e -> e.equals(name));
+    }
     @Override
     public List<Symbol> getSymbols() {
         return fields.values().stream().toList();
+    }
+    public Map<String, FunctionSymbol> getFunctions() {
+        return functions;
+    }
+    public Map<String, Symbol> getFields(){ return fields;}
+    public List<Symbol> getConstructorArgs() {
+        return constructorArgs;
     }
 }

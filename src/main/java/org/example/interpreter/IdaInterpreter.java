@@ -20,4 +20,6 @@ public interface IdaInterpreter {
     Object execute(VariableDefNode node);
     Object execute(StatementNode node);
     Object execute(WhileStatementNode node);
+    Object execute(StructureNode node);
+    Object execute(DotOpNode node);
 }

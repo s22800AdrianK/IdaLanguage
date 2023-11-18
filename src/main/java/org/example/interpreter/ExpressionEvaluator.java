@@ -6,9 +6,6 @@ import org.example.symbol.VarSymbol;
 public class ExpressionEvaluator {
     private MemorySpace memorySpace;
     private IdaInterpreter interpreter;
-
-
-
     public void executeWithGuard(VarSymbol var, Object value, ExpressionNode expressionNode) {
         memorySpace.setVariable(var.getType().getName(), value);
         if (!evaluateGuardExpression(expressionNode)) {
@@ -16,7 +13,6 @@ public class ExpressionEvaluator {
         }
         memorySpace.setVariable(var.getType().getName(), null);
     }
-
     public boolean evaluateGuardExpression(ExpressionNode guardExpr) {
         Object result = guardExpr.execute(interpreter);
         return (Boolean) result;

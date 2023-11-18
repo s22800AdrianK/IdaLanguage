@@ -5,12 +5,17 @@ import org.example.ast.PrimaryExNode;
 import org.example.handler.Handler;
 import org.example.scope.Scope;
 import org.example.symbol.FunctionSymbol;
+import org.example.symbol.StructureSymbol;
 import org.example.symbol.Symbol;
 import org.example.symbol.VarSymbol;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     private final MemorySpace memorySpace;
@@ -81,6 +86,39 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
 
     @Override
     public Object execute(FunctionCallNode node) {
+        Class<? extends Symbol> aClass = currentScope.resolve(node.getName()).getClass();
+        if (aClass.equals(FunctionSymbol.class)) {
+            return processAsAFunction(node);
+        }
+        return processAsAStruct(node);
+    }
+
+    private Object processAsAStruct(FunctionCallNode node) {
+        StructureSymbol structureNode = (StructureSymbol) currentScope.resolve(node.getName());
+        var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
+        pushScope(structureNode);
+        var res = functionCallEvaluator.matchesArguments(structureNode.getConstructorArgs(),evaluatedArgs,memorySpace);
+        if(!res) {
+            throw new RuntimeException("SSSSSS");
+        }
+        popScope(structureNode);
+
+        Stream<Map.Entry<String,Object>> args = IntStream.range(0,evaluatedArgs.size())
+                .mapToObj(i->Map.entry(structureNode.getConstructorArgs().get(i).getName(),evaluatedArgs.get(i)));
+
+        Stream<Map.Entry<String,Object>> fields = structureNode.getFields().keySet()
+                .stream()
+                .map(symbol -> Map.entry(symbol, null));
+
+        return Stream.concat(args,fields)
+                .collect(Collectors.toMap(
+                   Map.Entry::getKey,
+                   Map.Entry::getValue,
+                        (existing,replace) -> existing
+                ));
+    }
+
+    private Object processAsAFunction(FunctionCallNode node) {
         FunctionSymbol fun = (FunctionSymbol) currentScope.resolve(node.getName());
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
         pushScope(fun);
@@ -158,6 +196,18 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         while ((boolean)node.getCondition().execute(this)) {
             node.getThenBlock().execute(this);
         }
+        return null;
+    }
+
+    @Override
+    public Object execute(StructureNode node) { return null;}
+
+    @Override
+    public Object execute(DotOpNode node) {
+        StructureSymbol structureSymbol = (StructureSymbol) node.getLeft().getEvalType();
+        Object left = node.getLeft().execute(this);
+        Map<String,Object> str = (Map<String, Object>) left;
+
         return null;
     }
 

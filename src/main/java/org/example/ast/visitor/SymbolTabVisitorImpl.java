@@ -4,7 +4,6 @@ import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
 import org.example.handler.VisitorHandler;
-import org.example.exceptions.NotAFunctionException;
 import org.example.exceptions.TypeNotDefinedException;
 import org.example.exceptions.VariableAlreadyDefinedException;
 import org.example.exceptions.VariableNotDefinedException;
@@ -15,10 +14,8 @@ import org.example.symbol.StructureSymbol;
 import org.example.symbol.Symbol;
 import org.example.symbol.VarSymbol;
 import org.example.token.TokenType;
-import org.example.type.Type;
 
 import java.util.List;
-import java.util.Objects;
 
 public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableVisitor {
     private Scope currentScope;
@@ -51,26 +48,21 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     }
 
     @Override
-    public void visit(FunctionCallNode node) {
-            if(!(currentScope.resolve(node.getName()) instanceof FunctionSymbol)){
-                throw new NotAFunctionException(node.getName());
-            }
-    }
+    public void visit(FunctionCallNode node) {}
 
     @Override
     public void visit(FunctionDefNode node) {
-        Type retType = currentScope.resolveType(node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null));
-        List<Symbol> args = node.getParameters().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getTypes(),e.getGuardExpression().orElse(null))).toList();
+        List<Symbol> args = node.getParameters().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
         FunctionSymbol func;
         Symbol symbol = currentScope.resolve(node.getToken().getValue());
         if((symbol instanceof FunctionSymbol existing)){
-            if(!Objects.equals(existing.getType(),retType)){
+            if(existing.getSpecifierNode().getTypeName().equals(node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null))){
                 throw new RuntimeException("Function with the same name already exists but with a different return type");
             }
             func = existing;
             func.addNewImplementation(args,node.getBody());
         }else {
-            func = new FunctionSymbol(node.getToken().getValue(),retType,args,node.getBody(),currentScope);
+            func = new FunctionSymbol(node.getToken().getValue(),args,node.getReturnType().orElse(null),node.getBody(),currentScope);
         }
         currentScope.defineSymbol(func);
         currentScope = func;
@@ -111,7 +103,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
 
     @Override
     public void visit(VariableDefNode node) {
-        Symbol var = new VarSymbol(node.getVariable().getName(),node.getVariable().getTypes(), node.getVariable().getGuardExpression().orElse(null));
+        Symbol var = new VarSymbol(node.getVariable().getName(), node.getVariable().getGuardExpression().orElse(null));
         if(currentScope.checkIfAlreadyDefined(var.getName())){
             throw new VariableAlreadyDefinedException(node.getVariable().getName());
         }
@@ -128,13 +120,19 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
         if(currentScope.checkIfAlreadyDefined(node.getName())) {
             throw new VariableAlreadyDefinedException(node.getName());
         }
-
-        StructureSymbol struct = new StructureSymbol(node.getName(),currentScope);
+        List<Symbol> args = node.getConstructorParams().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
+        StructureSymbol struct = new StructureSymbol(args, node.getName(),currentScope);
         currentScope.defineSymbol(struct);
         currentScope = struct;
         node.getBody().visit(this);
         node.setSymbol(struct);
         currentScope = currentScope.getUpperScope();
+    }
+
+    @Override
+    public void visit(DotOpNode node) {
+        node.getLeft().visit(this);
+        node.getRight().visit(this);
     }
 
 }

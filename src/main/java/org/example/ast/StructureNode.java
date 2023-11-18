@@ -5,10 +5,12 @@ import org.example.interpreter.IdaInterpreter;
 import org.example.symbol.StructureSymbol;
 import org.example.token.Token;
 
+import java.util.List;
+
 public class StructureNode extends StatementNode{
     private BlockNode body;
-
     private StructureSymbol symbol;
+    private List<ParameterNode> constructorParams;
     public StructureNode(Token token) {
         super(token);
     }
@@ -40,5 +42,13 @@ public class StructureNode extends StatementNode{
 
     public void setSymbol(StructureSymbol symbol) {
         this.symbol = symbol;
+    }
+
+    public List<ParameterNode> getConstructorParams() {
+        return constructorParams;
+    }
+
+    public void setConstructorParams(List<ParameterNode> constructorParams) {
+        this.constructorParams = constructorParams;
     }
 }

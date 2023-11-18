@@ -7,7 +7,7 @@ import org.example.ast.ProgramNode
 import org.example.ast.VariableDefNode
 import org.example.ast.PrimaryExNode
 import org.example.scope.SymbolTable
-import org.example.symbol.BuiltInTypeSymbol
+import org.example.symbol.builtIn.BuiltInTypeSymbol
 import org.example.token.Token
 import org.example.token.TokenType
 import spock.lang.Specification
@@ -17,7 +17,7 @@ class SetVarTypesVisitorImplSpec extends Specification {
     def "should visit nodes and set type for variable"() {
         given:
         SymbolTable symbolTable = Mock(SymbolTable)
-        symbolTable.getBuliInTypeForName(_ as String) >> new BuiltInTypeSymbol("num")
+        symbolTable.getBuiltInTypeForName(_ as String) >> new BuiltInTypeSymbol("num")
         ValidateASTVisitorImpl typesVisitor = new ValidateASTVisitorImpl(symbolTable)
         ProgramNode programNode = new ProgramNode()
         VariableDefNode defNode = new  VariableDefNode(new Token(TokenType.NAME,"a")).with {

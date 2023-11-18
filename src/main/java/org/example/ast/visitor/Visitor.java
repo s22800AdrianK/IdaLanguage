@@ -38,4 +38,6 @@ public interface Visitor {
     void visit(WhileStatementNode node);
 
     void visit(StructureNode node);
+
+    void visit(DotOpNode node);
 }

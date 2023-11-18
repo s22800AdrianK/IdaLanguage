@@ -36,7 +36,7 @@ public class IdaProcessingPipeline {
     }
 
     private void setUpHandlerChain() {
-        Handler setVarVisitor = new ValidateASTVisitorImpl(symbolTable);
+        Handler setVarVisitor = new ValidateASTVisitorImpl();
         Handler symboTabVisitor = new SymbolTabVisitorImpl(symbolTable);
         TypeResolver resolver = new TypeResolverImpl(symbolTable);
         Handler expresionVisitor = new ExpressionTypesVisitorImpl(resolver,symbolTable);

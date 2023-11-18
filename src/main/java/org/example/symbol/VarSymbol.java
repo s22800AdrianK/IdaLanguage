@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public class VarSymbol extends Symbol {
     private final ExpressionNode guardExpr;
-    public VarSymbol(String name, Type type, ExpressionNode guardExpr) {
-        super(name, type);
+    public VarSymbol(String name, ExpressionNode guardExpr) {
+        super(name);
         this.guardExpr = guardExpr;
     }
 

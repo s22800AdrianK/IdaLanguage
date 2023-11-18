@@ -51,6 +51,9 @@ public class IdaParser extends Parser {
         match(TokenType.STRUCT);
         StructureNode node = new StructureNode(LT(1));
         match(TokenType.NAME);
+        match(TokenType.L_BRACK);
+        node.setConstructorParams(parameters());
+        match(TokenType.R_BRACK);
         node.setBody(block());
         return  node;
     }
@@ -221,18 +224,11 @@ public class IdaParser extends Parser {
         if (LA(1) == TokenType.NAME) {
             if (LA(2) == TokenType.L_BRACK) {
                 node = functionCall();
-            } else if (LA(2) == TokenType.OP_DOT) {
-                node = fieldAccessExpression();
             } else {
                 node = fieldAccessExpression();
             }
-        } else if (LA(1) == TokenType.NUMBER || (LA(1) == TokenType.MINUS && LA(2) == TokenType.NUMBER)) {
-            Token token = LT(1);
-            if(LA(1)==TokenType.MINUS) {
-                match(TokenType.MINUS);
-                token = new Token(TokenType.NUMBER,"-"+LT(1).getValue());
-            }
-            node = new PrimaryExNode(token);
+        } else if (isNumber(LA(1),LA(2))) {
+            node = new PrimaryExNode(handleNumber());
             match(TokenType.NUMBER);
         } else if (LA(1) == TokenType.STRING) {
             node = new PrimaryExNode(LT(1));
@@ -253,7 +249,7 @@ public class IdaParser extends Parser {
             Token opToken = LT(1);
             match(LA(1));
             ExpressionNode right = primaryExpression();
-            BinaryOpNode newExpr = new BinaryOpNode(opToken);
+            BinaryOpNode newExpr = new DotOpNode(opToken);
             newExpr.setLeft(currentExpr);
             newExpr.setRight(right);
             currentExpr = newExpr;
@@ -364,5 +360,19 @@ public class IdaParser extends Parser {
                 || type == TokenType.TYPE_BOOL
                 || type == TokenType.TYPE_STRING
                 || type == TokenType.NAME;
+    }
+
+    private boolean isNumber(TokenType first, TokenType second) {
+        return first == TokenType.NUMBER ||
+                (first == TokenType.MINUS && second == TokenType.NUMBER);
+    };
+
+    private Token handleNumber() {
+        Token token = LT(1);
+        if(LA(1)==TokenType.MINUS) {
+            match(TokenType.MINUS);
+            token = new Token(TokenType.NUMBER,"-"+LT(1).getValue());
+        }
+        return token;
     }
 }
