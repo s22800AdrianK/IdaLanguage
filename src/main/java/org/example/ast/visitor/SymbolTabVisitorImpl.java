@@ -26,9 +26,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
 
     @Override
     public void visit(AssignmentNode node) {
-        if(!currentScope.checkIfAlreadyDefined(node.getVariableName())){
-            throw new VariableNotDefinedException(node.getVariableName());
-        }
+        node.getTarget().visit(this);
         node.getExpression().visit(this);
     }
 
@@ -126,13 +124,14 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
         currentScope = struct;
         node.getBody().visit(this);
         node.setSymbol(struct);
+
         currentScope = currentScope.getUpperScope();
     }
 
     @Override
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
-        node.getRight().visit(this);
+        node.getRight().peekLeft(f->f.visit(this));
     }
 
 }

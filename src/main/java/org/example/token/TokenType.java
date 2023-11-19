@@ -13,7 +13,7 @@ public enum TokenType {
     MULT("\\*"),
     DEVID("\\/"),
     MODULO("%"),
-    OP_DOT("."),
+    OP_DOT("\\."),
     OP_EQUALS("=="),
     OP_NOT_EQUALS("!="),
     OP_SMALLER_EQUAL("<="),

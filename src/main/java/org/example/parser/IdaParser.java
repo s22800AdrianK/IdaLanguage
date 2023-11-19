@@ -1,5 +1,6 @@
 package org.example.parser;
 
+import io.vavr.control.Either;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
@@ -31,7 +32,7 @@ public class IdaParser extends Parser {
     private StatementNode statement() {
         return switch (LA(1)) {
             case FN -> functionDefinition();
-            case NAME -> expresionOrVariable();
+            case NAME -> nameStartStatement();
             case IF -> ifStatement();
             case PRINT -> printStatement();
             case L_C_BRACK -> block();
@@ -83,12 +84,19 @@ public class IdaParser extends Parser {
                 || type == TokenType.L_BRACK;
     }
 
-    private StatementNode expresionOrVariable() {
-        if (LA(2) == TokenType.EQUALS || LA(2) == TokenType.COLON) {
-            return variable();
-        } else {
-            return expressionStatement();
+    private StatementNode nameStartStatement() {
+        if (LA(2) == TokenType.COLON) {
+            return variableDefinition();
         }
+        return expressionOrAssignmentStatement();
+    }
+
+    private StatementNode expressionOrAssignmentStatement() {
+        ExpressionNode expr = expression();
+        if(LA(1) == TokenType.EQUALS) {
+            return assignment(expr);
+        }
+        return expr;
     }
 
     private StatementNode printStatement() {
@@ -182,14 +190,34 @@ public class IdaParser extends Parser {
     }
 
     private ExpressionNode multiplicativeExpression() {
-        ExpressionNode currentExpr = primaryExpression();
+        ExpressionNode currentExpr = fieldAccessExpression();
         while (LA(1) == TokenType.MULT || LA(1) == TokenType.DEVID || LA(1) == TokenType.MODULO) {
             Token opToken = LT(1);
             match(LA(1));
-            ExpressionNode right = primaryExpression();
+            ExpressionNode right = fieldAccessExpression();
             BinaryOpNode newExpr = new BinaryOpNode(opToken);
             newExpr.setLeft(currentExpr);
             newExpr.setRight(right);
+            currentExpr = newExpr;
+        }
+        return currentExpr;
+    }
+
+    private ExpressionNode fieldAccessExpression() {
+        ExpressionNode currentExpr = primaryExpression();
+        while (LA(1) == TokenType.OP_DOT) {
+            Token opToken = LT(1);
+            match(LA(1));
+            ExpressionNode right = primaryExpression();
+            Either<FunctionCallNode,Token> either;
+            if(right instanceof FunctionCallNode functionCallNode) {
+                either = Either.left(functionCallNode);
+            }else{
+                either = Either.right(right.getToken());
+            }
+            DotOpNode newExpr = new DotOpNode(opToken);
+            newExpr.setLeft(currentExpr);
+            newExpr.setRight(either);
             currentExpr = newExpr;
         }
         return currentExpr;
@@ -225,7 +253,8 @@ public class IdaParser extends Parser {
             if (LA(2) == TokenType.L_BRACK) {
                 node = functionCall();
             } else {
-                node = fieldAccessExpression();
+                node = new PrimaryExNode(LT(1));
+                match(TokenType.NAME);
             }
         } else if (isNumber(LA(1),LA(2))) {
             node = new PrimaryExNode(handleNumber());
@@ -241,20 +270,6 @@ public class IdaParser extends Parser {
             throw new RuntimeException("expecting primary expression; found " + LT(1));
         }
         return node;
-    }
-
-    private ExpressionNode fieldAccessExpression() {
-        ExpressionNode currentExpr = primaryExpression();
-        while (LA(1) == TokenType.OP_DOT) {
-            Token opToken = LT(1);
-            match(LA(1));
-            ExpressionNode right = primaryExpression();
-            BinaryOpNode newExpr = new DotOpNode(opToken);
-            newExpr.setLeft(currentExpr);
-            newExpr.setRight(right);
-            currentExpr = newExpr;
-        }
-        return currentExpr;
     }
 
     private ExpressionNode functionCall() {
@@ -273,11 +288,6 @@ public class IdaParser extends Parser {
         return functionCall;
     }
 
-    private StatementNode variable() {
-        if (LA(2) == TokenType.EQUALS) return assignment();
-        else if (LA(2) == TokenType.COLON) return variableDefinition();
-        else throw new RuntimeException("expecting typeSpecifier; found " + LT(2));
-    }
 
     private VariableDefNode variableDefinition() {
         Token name = LT(1);
@@ -302,12 +312,13 @@ public class IdaParser extends Parser {
         return node;
     }
 
-    private AssignmentNode assignment() {
-        Token name = LT(1);
-        AssignmentNode node = new AssignmentNode(name);
-        match(TokenType.NAME);
+    private AssignmentNode assignment(ExpressionNode exprLeft) {
+        Token t = LT(1);
+        AssignmentNode node = new AssignmentNode(t);
         match(TokenType.EQUALS);
-        node.setExpression(expression());
+        ExpressionNode right = expression();
+        node.setTarget(exprLeft);
+        node.setExpression(right);
         return node;
     }
 
@@ -331,7 +342,10 @@ public class IdaParser extends Parser {
 
     private List<ParameterNode> parameters() {
         List<ParameterNode> params = new ArrayList<>();
-        while (LA(1) == TokenType.NAME && LA(1) == TokenType.COMMA) {
+        if(LA(1)==TokenType.NAME){
+            params.add(parameter());
+        }
+        while (LA(1) == TokenType.NAME) {
             match(TokenType.COMMA);
             params.add(parameter());
         }

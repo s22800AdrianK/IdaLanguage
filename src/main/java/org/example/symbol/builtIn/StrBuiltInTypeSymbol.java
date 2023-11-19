@@ -9,10 +9,9 @@ import java.util.function.BiFunction;
 public class StrBuiltInTypeSymbol extends BuiltInTypeSymbol{
     public StrBuiltInTypeSymbol(Scope scope) {
         super(TokenType.TYPE_STRING.getRegex(), scope);
-        setupOperations();
     }
 
-    private void setupOperations() {
+    public void setupOperations() {
         BiFunction<Object, Object, Object> addOperation = (a, b) -> a.toString() + b.toString();
         getOperations().add(new TypeOperation(this, this, this, TokenType.ADD, addOperation));
         getOperations().add(new TypeOperation(this, this.resolveType(TokenType.TYPE_NUMBER.getRegex()), this, TokenType.ADD, addOperation));

@@ -18,6 +18,7 @@ public class SymbolTable extends CoreScope {
         this.defineSymbol(new StrBuiltInTypeSymbol(this));
         this.defineSymbol(new BoolBuiltInTypeSymbol(this));
         this.defineSymbol(new NumBuiltInTypeSymbol(this));
+        getBuiltInTypes().forEach(BuiltInTypeSymbol::setupOperations);
     }
 
     public BuiltInTypeSymbol getBuiltInTypeForName(String name) {

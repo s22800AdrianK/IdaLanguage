@@ -1,5 +1,19 @@
-ifvar:num=3
-if ifvar>2 {
+var:num=3
+if var > 2 {
   print "true"
 }
-print ifvar
+print var
+
+fn test() {
+  print "wartosc "
+}
+
+test()
+
+st A() {
+  var:num
+}
+
+v1:A = A()
+
+v1.var = 3

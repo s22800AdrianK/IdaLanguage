@@ -8,13 +8,13 @@ import org.example.type.TypeOperation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BuiltInTypeSymbol extends StructureSymbol implements Type {
+public abstract class BuiltInTypeSymbol extends StructureSymbol implements Type {
     private final List<TypeOperation> operations = new ArrayList<>();
     public BuiltInTypeSymbol(String name, Scope scope) {
-        super(constructor, name,scope);
+        super(null, name,scope);
     }
-
     public List<TypeOperation> getOperations() {
         return operations;
     }
+    public abstract void setupOperations();
 }

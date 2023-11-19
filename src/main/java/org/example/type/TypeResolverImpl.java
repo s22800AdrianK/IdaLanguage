@@ -28,9 +28,7 @@ public class TypeResolverImpl implements TypeResolver{
     @Override
     public Type getEvalType(TokenType opType,Type left, Type right) {
         validateTokenType(opType);
-        if (opType == TokenType.OP_DOT) {
-            return right; // Return the right-hand type for the dot operator
-        }
+
         return map.getOrDefault(opType,new HashMap<>())
                 .getOrDefault(left,new HashMap<>())
                 .getOrDefault(right,null);

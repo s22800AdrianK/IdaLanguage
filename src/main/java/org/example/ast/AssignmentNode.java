@@ -5,7 +5,8 @@ import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 
 public class AssignmentNode extends StatementNode {
-    private ExpressionNode expression;
+    private  ExpressionNode target;
+    private  ExpressionNode expression;
 
     public AssignmentNode(Token token) {
         super(token);
@@ -23,6 +24,15 @@ public class AssignmentNode extends StatementNode {
     public void setExpression(ExpressionNode expression) {
         this.expression = expression;
     }
+
+    public ExpressionNode getTarget() {
+        return target;
+    }
+
+    public void setTarget(ExpressionNode target) {
+        this.target = target;
+    }
+
     @Override
     public void visit(Visitor visitor) {
         visitor.visit(this);

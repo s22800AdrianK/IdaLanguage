@@ -85,6 +85,6 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
     @Override
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
-        node.getRight().visit(this);
+        node.getRight().peekLeft(f->f.visit(this));
     }
 }

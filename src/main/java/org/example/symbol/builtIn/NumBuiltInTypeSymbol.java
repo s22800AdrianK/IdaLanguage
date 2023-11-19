@@ -10,10 +10,8 @@ import java.util.function.BiFunction;
 public class NumBuiltInTypeSymbol extends BuiltInTypeSymbol{
     public NumBuiltInTypeSymbol(Scope scope) {
         super(TokenType.TYPE_NUMBER.getRegex(),scope);
-        setupOperations();
     }
-
-    private void setupOperations() {
+    public void setupOperations() {
         BiFunction<Object, Object, Object> addOperation = (a, b) -> new BigDecimal(a.toString()).add(new BigDecimal(b.toString()));
         getOperations().add(new TypeOperation(this, this, this,TokenType.ADD, addOperation));
 

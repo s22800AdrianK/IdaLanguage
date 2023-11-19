@@ -9,9 +9,8 @@ import java.util.function.BiFunction;
 public class BoolBuiltInTypeSymbol extends BuiltInTypeSymbol {
     public BoolBuiltInTypeSymbol(Scope scope) {
         super(TokenType.TYPE_BOOL.getRegex(), scope);
-        setupOperations();
     }
-    private void setupOperations() {
+    public void setupOperations() {
         BiFunction<Object, Object, Object> andOperation = (a, b) -> (Boolean) a && (Boolean) b;
         getOperations().add(new TypeOperation(this, this,this, TokenType.AND, andOperation));
 

@@ -87,12 +87,14 @@ primaryExpression
 
 fieldAccess
     : expression '.' NAME
+    | expression '.' functionCall
     ;
 
 primary
     :   NAME
     |   NUM
     |   STR
+    |   BOOL
     |   '(' expression ')'
     ;
 

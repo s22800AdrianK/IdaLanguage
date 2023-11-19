@@ -2,6 +2,7 @@ package org.example.interpreter;
 
 import org.example.scope.Scope;
 import org.example.symbol.Symbol;
+import org.example.symbol.builtIn.BuiltInTypeSymbol;
 
 import java.util.Deque;
 import java.util.HashMap;
@@ -11,13 +12,14 @@ import java.util.Map;
 public class MemorySpaceImpl implements MemorySpace {
     private final Deque<Map<String, Object>> stack = new LinkedList<>();
 
+    @Override
     public void setVariable(String name, Object value) {
         stack.stream()
                 .filter(s->s.containsKey(name))
                 .findFirst()
                 .ifPresent(s->s.put(name,value));
     }
-
+    @Override
     public Object getVariable(String name) {
         return stack.stream()
                 .filter(s->s.containsKey(name))
@@ -40,6 +42,7 @@ public class MemorySpaceImpl implements MemorySpace {
         scope.getSymbols().forEach(e->scopedVariables.put(e.getName(),null));
         stack.push(scopedVariables);
     }
+
 
 
 }

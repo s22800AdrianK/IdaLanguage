@@ -44,7 +44,7 @@ public class StructureSymbol extends Symbol implements Type, Scope {
 
     @Override
     public Type resolveType(String name) {
-        return null;
+        return upperScope.resolveType(name);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class StructureSymbol extends Symbol implements Type, Scope {
         if(functions.containsKey(name)){
             return true;
         }
-        return constructorArgs.stream().map(Symbol::getName).anyMatch(e -> e.equals(name)) || upperScope.checkIfAlreadyDefined(name);
+        return constructorArgs.stream().map(Symbol::getName).anyMatch(e -> e.equals(name));
     }
 
     public boolean checkIfHasFieldOrFunction(String name) {

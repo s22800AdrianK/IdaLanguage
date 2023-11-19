@@ -46,9 +46,33 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     @Override
     public Object execute(AssignmentNode node) {
         Object value = node.getExpression().execute(this);
-        VarSymbol var = (VarSymbol) currentScope.resolve(node.getVariableName());
-        var.getGuardExpr().ifPresent(expressionNode -> expressionEvaluator.executeWithGuard(var,value,expressionNode));
-        memorySpace.setVariable(node.getVariableName(),value);
+
+        if(node.getTarget() instanceof DotOpNode dotOpNode) {
+            assignToField(dotOpNode, value);
+        } else if (node.getTarget() instanceof PrimaryExNode exNode) {
+            VarSymbol var = (VarSymbol) currentScope.resolve(exNode.getValue());
+            var.getGuardExpr().ifPresent(expressionNode -> expressionEvaluator.executeWithGuard(var,value,expressionNode));
+            memorySpace.setVariable(node.getVariableName(),value);
+        }
+
+        return null;
+    }
+
+    private void assignToField(DotOpNode dotOpNode, Object value) {
+        StructureInstance st = loadStructInstance(dotOpNode);
+        if(st!=null) {
+            st.getFields().put(dotOpNode.getRight().get().getValue(),value);
+        }
+    }
+
+    private StructureInstance loadStructInstance(DotOpNode dotOpNode) {
+        Object left = dotOpNode.getLeft().execute(this);
+        if(left instanceof StructureInstance leftStruct) {
+            if(leftStruct.getFields().get(dotOpNode.getRight().get().getValue()) instanceof StructureInstance rightStruct) {
+                return rightStruct;
+            }
+            return leftStruct;
+        }
         return null;
     }
 
@@ -103,19 +127,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         }
         popScope(structureNode);
 
-        Stream<Map.Entry<String,Object>> args = IntStream.range(0,evaluatedArgs.size())
-                .mapToObj(i->Map.entry(structureNode.getConstructorArgs().get(i).getName(),evaluatedArgs.get(i)));
-
-        Stream<Map.Entry<String,Object>> fields = structureNode.getFields().keySet()
-                .stream()
-                .map(symbol -> Map.entry(symbol, null));
-
-        return Stream.concat(args,fields)
-                .collect(Collectors.toMap(
-                   Map.Entry::getKey,
-                   Map.Entry::getValue,
-                        (existing,replace) -> existing
-                ));
+        return new StructureInstance(structureNode,evaluatedArgs);
     }
 
     private Object processAsAFunction(FunctionCallNode node) {
@@ -204,10 +216,10 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
 
     @Override
     public Object execute(DotOpNode node) {
-        StructureSymbol structureSymbol = (StructureSymbol) node.getLeft().getEvalType();
         Object left = node.getLeft().execute(this);
-        Map<String,Object> str = (Map<String, Object>) left;
-
+        if(left instanceof StructureInstance struct) {
+            return struct.getFields().get(node.getRight().get().getValue());
+        }
         return null;
     }
 

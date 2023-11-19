@@ -32,6 +32,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     @Override
     public void visit(AssignmentNode node) {
+        node.getTarget().visit(this);
         node.getExpression().visit(this);
     }
 
@@ -110,7 +111,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         currentScope = node.getFunctionSymbol();
 
         node.getReturnType().ifPresent(e->e.visit(this));
-        node.getFunctionSymbol().setType(node.getReturnType().get().getType());
+        node.getFunctionSymbol().setType(node.getReturnType().map(TypeSpecifierNode::getType).orElse(null));
 
         node.getParameters().forEach(e->e.visit(this));
 
@@ -202,9 +203,12 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     @Override
     public void visit(VariableDefNode node) {
-            if(!currentScope.checkIfAlreadyDefined(node.getVariable().getTypeSpecifierNode().getTypeName())) {
+            Type type = currentScope.resolveType(node.getVariable().getTypeSpecifierNode().getTypeName());
+            if (type == null) {
                 throw new RuntimeException("unknown type");
             }
+            node.getVariable().setTypes(type);
+            currentScope.resolve(node.getVariable().getName()).setType(type);
             node.getInitializer().ifPresent(e->{
                 e.visit(this);
                 if(!node.getVariable().getTypes().equals(e.getEvalType())){
@@ -238,14 +242,17 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     @Override
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
-        node.getRight().visit(this);
-        if(!(node.getLeft().getEvalType() instanceof StructureSymbol structureSymbol)) {
-            throw new RuntimeException("not a structure");
-        }
-        if(structureSymbol.checkIfHasFieldOrFunction(node.getRight().getToken().getValue())) {
-            throw new RuntimeException("not a field");
-        }
-        node.setEvalType(node.getRight().getEvalType());
+        StructureSymbol structureSymbol = (StructureSymbol) node.getLeft().getEvalType();
+
+        node.getRight().peek(token -> {
+            if(!structureSymbol.checkIfHasFieldOrFunction(token.getValue())) {
+                throw new RuntimeException("not a field in structure");
+            }
+        }).peekLeft(fcall -> {
+            if(!structureSymbol.checkIfHasFieldOrFunction(fcall.getName())) {
+                throw new RuntimeException("not a function in structure");
+            }
+        });
     }
 
 }

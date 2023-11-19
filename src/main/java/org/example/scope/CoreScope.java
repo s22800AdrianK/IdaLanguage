@@ -35,14 +35,8 @@ public class CoreScope implements Scope {
     }
     @Override
     public boolean checkIfAlreadyDefined(String name) {
-        Scope current = this;
-        while (current!=null){
-            if(current.resolve(name)!=null) {
-                return true;
-            }
-            current = current.getUpperScope();
-        }
-        return false;
+        return this.resolve(name)!=null ||
+                (this.getUpperScope()!=null && this.getUpperScope().checkIfAlreadyDefined(name));
     }
 
     public List<Symbol> getSymbols() {
