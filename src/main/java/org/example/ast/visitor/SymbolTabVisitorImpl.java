@@ -119,12 +119,18 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
             throw new VariableAlreadyDefinedException(node.getName());
         }
         List<Symbol> args = node.getConstructorParams().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
-        StructureSymbol struct = new StructureSymbol(args, node.getName(),currentScope);
+        StructureSymbol struct = new StructureSymbol(args, node.getName(),currentScope, node.getBody());
         currentScope.defineSymbol(struct);
         currentScope = struct;
         node.getBody().visit(this);
+        node.getBody().getScope().getSymbols().forEach(symbol -> {
+            if(symbol instanceof FunctionSymbol functionSymbol) {
+                struct.getFunctions().put(functionSymbol.getName(),functionSymbol);
+            }else {
+                struct.getFields().put(symbol.getName(),symbol);
+            }
+        });
         node.setSymbol(struct);
-
         currentScope = currentScope.getUpperScope();
     }
 

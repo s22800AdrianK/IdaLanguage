@@ -1,19 +1,9 @@
-var:num=3
-if var > 2 {
-  print "true"
-}
-print var
-
-fn test() {
-  print "wartosc "
+st A(v1:num) {
+  var:num = v1+2
 }
 
-test()
+v:A = A(1)
 
-st A() {
-  var:num
-}
+print v.var
 
-v1:A = A()
 
-v1.var = 3

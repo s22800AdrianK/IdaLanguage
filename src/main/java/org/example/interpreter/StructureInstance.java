@@ -3,6 +3,7 @@ package org.example.interpreter;
 import org.example.ast.StructureNode;
 import org.example.symbol.StructureSymbol;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +14,20 @@ import java.util.stream.Stream;
 public class StructureInstance {
     private final Map<String,Object> fields;
 
-    public StructureInstance(StructureSymbol structureSymbol, List<Object> evaluatedArgs) {
-        Stream<Map.Entry<String,Object>> args = IntStream.range(0,evaluatedArgs.size())
-                .mapToObj(i->Map.entry(structureSymbol.getConstructorArgs().get(i).getName(),evaluatedArgs.get(i)));
-        Stream<Map.Entry<String,Object>> fields = structureSymbol.getFields().keySet()
-                .stream()
-                .map(symbol -> Map.entry(symbol, null));
-        this.fields =  Stream.concat(args,fields)
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (existing,replace) -> existing
-                        ));
+    public StructureInstance(Map<String,Object> fields, List<Object> evaluatedArgs,StructureSymbol structureSymbol) {
+        Map<String,Object> args = IntStream.range(0,evaluatedArgs.size())
+                .mapToObj(i->new AbstractMap.SimpleEntry<>(structureSymbol.getConstructorArgs().get(i).getName(),evaluatedArgs.get(i)))
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue,(existing, replace) -> existing));
+        args.forEach((key,value)->fields.merge(key,value,(v1,v2)->v1));
+        this.fields = fields;
+    }
+
+    private Map<String, Object> retriveFields(StructureSymbol structureSymbol) {
+        Map<String,Object> ret = new HashMap<>();
+        for (String name: structureSymbol.getFields().keySet()) {
+            ret.put(name,null);
+        }
+        return ret;
     }
 
     public Map<String, Object> getFields() {

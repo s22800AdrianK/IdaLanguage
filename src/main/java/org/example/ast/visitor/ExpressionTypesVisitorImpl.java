@@ -73,6 +73,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     private void processAsAStruct(FunctionCallNode node) {
         StructureSymbol st = (StructureSymbol) currentScope.resolve(node.getName());
+        node.getArguments().forEach(e->e.visit(this));
         List<Symbol> args = st.getConstructorArgs();
         if(args.size()!=node.getArguments().size()) {
             throw new RuntimeException("wrong number of constructor arguments");
@@ -173,6 +174,8 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     @Override
     public void visit(ParameterNode node) {
+        currentScope.resolve(node.getName()).setType(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
+        node.setTypes(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
         node.getGuardExpression().ifPresent(e->e.visit(this));
     }
 
@@ -235,6 +238,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     @Override
     public void visit(StructureNode node) {
         currentScope = node.getSymbol();
+        node.getConstructorParams().forEach(p->p.visit(this));
         node.getBody().visit(this);
         currentScope = node.getSymbol().getUpperScope();
     }

@@ -30,10 +30,8 @@ public class MemorySpaceImpl implements MemorySpace {
 
 
     @Override
-    public void pop() {
-        if (!stack.isEmpty()) {
-            stack.pop();
-        }
+    public Map<String, Object> pop() {
+        return !stack.isEmpty()? stack.pop() : null;
     }
 
     @Override

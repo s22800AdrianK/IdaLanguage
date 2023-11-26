@@ -1,12 +1,11 @@
 package org.example.symbol;
 
 
+import org.example.ast.BlockNode;
 import org.example.scope.Scope;
 import org.example.type.Type;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StructureSymbol extends Symbol implements Type, Scope {
     private final Map<String,Symbol> fields = new HashMap<>();
@@ -14,12 +13,13 @@ public class StructureSymbol extends Symbol implements Type, Scope {
     private final List<Symbol> constructorArgs;
     private final String name;
     private final Scope upperScope;
-
-    public StructureSymbol(List<Symbol> constructorArgs, String name, Scope upperScope) {
+    private final BlockNode body;
+    public StructureSymbol(List<Symbol> constructorArgs, String name, Scope upperScope, BlockNode body) {
         super(name);
         this.constructorArgs = constructorArgs;
         this.name = name;
         this.upperScope = upperScope;
+        this.body = body;
     }
 
     @Override
@@ -39,7 +39,13 @@ public class StructureSymbol extends Symbol implements Type, Scope {
 
     @Override
     public Symbol resolve(String name) {
-        return fields.get(name);
+        if(fields.containsKey(name)) {
+            return fields.get(name);
+        }
+        return constructorArgs.stream()
+                .filter(e->e.getName().equals(name))
+                .findFirst()
+                .orElse(getUpperScope() != null ? getUpperScope().resolve(name) : null);
     }
 
     @Override
@@ -69,7 +75,9 @@ public class StructureSymbol extends Symbol implements Type, Scope {
     }
     @Override
     public List<Symbol> getSymbols() {
-        return fields.values().stream().toList();
+        var symbols = new ArrayList<>(fields.values());
+        symbols.addAll(constructorArgs);
+        return symbols;
     }
     public Map<String, FunctionSymbol> getFunctions() {
         return functions;
@@ -77,5 +85,9 @@ public class StructureSymbol extends Symbol implements Type, Scope {
     public Map<String, Symbol> getFields(){ return fields;}
     public List<Symbol> getConstructorArgs() {
         return constructorArgs;
+    }
+
+    public BlockNode getBody() {
+        return body;
     }
 }

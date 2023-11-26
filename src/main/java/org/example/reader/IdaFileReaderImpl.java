@@ -17,7 +17,7 @@ public class IdaFileReaderImpl implements IdaFileReader{
         }
         checkFileExtension(pathToFile.toString());
 
-        return new String(Files.readAllBytes(pathToFile));
+        return new String(Files.readAllBytes(pathToFile)).trim();
     }
 
     private static void checkFileExtension(String path) throws IOException {

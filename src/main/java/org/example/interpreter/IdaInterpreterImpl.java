@@ -118,16 +118,17 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     private Object processAsAStruct(FunctionCallNode node) {
-        StructureSymbol structureNode = (StructureSymbol) currentScope.resolve(node.getName());
+        StructureSymbol structure = (StructureSymbol) currentScope.resolve(node.getName());
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
-        pushScope(structureNode);
-        var res = functionCallEvaluator.matchesArguments(structureNode.getConstructorArgs(),evaluatedArgs,memorySpace);
+        pushScope(structure);
+        var res = functionCallEvaluator.matchesArguments(structure.getConstructorArgs(),evaluatedArgs,memorySpace);
         if(!res) {
             throw new RuntimeException("SSSSSS");
         }
-        popScope(structureNode);
-
-        return new StructureInstance(structureNode,evaluatedArgs);
+        //functionCallEvaluator.assignArgumentsToParameters();
+        structure.getBody().execute(this);
+        var structFields = popScope(structure);
+        return new StructureInstance(structFields,evaluatedArgs,structure);
     }
 
     private Object processAsAFunction(FunctionCallNode node) {
@@ -228,9 +229,9 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         currentScope = scope;
     }
 
-    private void popScope(Scope scope) {
-        memorySpace.pop();
+    private Map<String,Object> popScope(Scope scope) {
         currentScope = scope.getUpperScope();
+        return memorySpace.pop();
     }
 
     @Override

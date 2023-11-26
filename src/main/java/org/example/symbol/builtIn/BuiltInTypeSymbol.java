@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class BuiltInTypeSymbol extends StructureSymbol implements Type {
     private final List<TypeOperation> operations = new ArrayList<>();
     public BuiltInTypeSymbol(String name, Scope scope) {
-        super(null, name,scope);
+        super(null, name,scope, null);
     }
     public List<TypeOperation> getOperations() {
         return operations;
