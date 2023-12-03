@@ -1,9 +1,17 @@
+st B() {
+  var:num = 2
+}
+
 st A(v1:num) {
   var:num = v1+2
+  v2:B
 }
 
 v:A = A(1)
 
 print v.var
+v.v2 = B()
+print v.v2.var+4
+print v.v2.var
 
 

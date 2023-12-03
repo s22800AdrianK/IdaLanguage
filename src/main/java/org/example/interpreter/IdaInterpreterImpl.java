@@ -125,8 +125,8 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         if(!res) {
             throw new RuntimeException("SSSSSS");
         }
-        //functionCallEvaluator.assignArgumentsToParameters();
-        structure.getBody().execute(this);
+        functionCallEvaluator.assignArgumentsToParameters(structure.getConstructorArgs(),evaluatedArgs);
+        structure.getBody().getStatements().forEach(e->e.execute(this));
         var structFields = popScope(structure);
         return new StructureInstance(structFields,evaluatedArgs,structure);
     }
@@ -139,7 +139,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         if(finalFun == null) {
             throw new RuntimeException("AAAAAAAAAA");
         }
-        functionCallEvaluator.assignArgumentsToParameters(finalFun,evaluatedArgs);
+        functionCallEvaluator.assignArgumentsToParameters(finalFun.getKey(),evaluatedArgs);
         Object ret = null;
         if(fun.getType()!=null) {
             ret = finalFun.getValue().execute(this);

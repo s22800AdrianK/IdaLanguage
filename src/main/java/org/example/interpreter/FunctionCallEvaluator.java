@@ -50,9 +50,9 @@ public class FunctionCallEvaluator {
                 .collect(Collectors.toList());
     }
 
-    public void assignArgumentsToParameters(Map.Entry<List<Symbol>, BlockNode> functionExecutionResult, List<Object> evaluatedArgs) {
+    public void assignArgumentsToParameters(List<Symbol> functionArgs, List<Object> evaluatedArgs) {
         IntStream.range(0, evaluatedArgs.size())
-                .mapToObj(i -> new AbstractMap.SimpleEntry<>(functionExecutionResult.getKey().get(i), evaluatedArgs.get(i)))
+                .mapToObj(i -> new AbstractMap.SimpleEntry<>(functionArgs.get(i), evaluatedArgs.get(i)))
                 .forEach(entry -> memorySpace.setVariable(entry.getKey().getName(), entry.getValue()));
     }
 

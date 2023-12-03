@@ -247,16 +247,21 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
         StructureSymbol structureSymbol = (StructureSymbol) node.getLeft().getEvalType();
-
+        currentScope = structureSymbol;
         node.getRight().peek(token -> {
             if(!structureSymbol.checkIfHasFieldOrFunction(token.getValue())) {
                 throw new RuntimeException("not a field in structure");
             }
+            node.setEvalType(currentScope.resolve(token.getValue()).getType());
         }).peekLeft(fcall -> {
             if(!structureSymbol.checkIfHasFieldOrFunction(fcall.getName())) {
                 throw new RuntimeException("not a function in structure");
+
             }
+            processAsAFunction(fcall);
+            node.setEvalType(fcall.getEvalType());
         });
+        currentScope = structureSymbol.getUpperScope();
     }
 
 }
