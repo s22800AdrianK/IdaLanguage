@@ -38,7 +38,7 @@ public class Symbol {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Symbol symbol = (Symbol) o;
-        return Objects.equals(name, symbol.name) && (Objects.equals(type.getName(), symbol.type.getName()));
+        return Objects.equals(name, symbol.name) && Objects.equals(type.getName(), symbol.type.getName());
     }
     @Override
     public int hashCode() {

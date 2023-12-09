@@ -26,6 +26,8 @@ public enum TokenType {
     COLON(":"),
     L_C_BRACK("\\{"),
     R_C_BRACK("\\}"),
+    L_S_BRACK("\\["),
+    R_S_BRACK("\\]"),
     IF("if"),
     ELSE("else"),
     PRINT("print"),

@@ -2,20 +2,14 @@ package org.example.interpreter;
 
 import org.example.ast.*;
 import org.example.ast.PrimaryExNode;
+import org.example.ast.ArrayAccessNode;
 import org.example.handler.Handler;
 import org.example.scope.Scope;
-import org.example.symbol.FunctionSymbol;
-import org.example.symbol.StructureSymbol;
-import org.example.symbol.Symbol;
-import org.example.symbol.VarSymbol;
+import org.example.symbol.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     private final MemorySpace memorySpace;
@@ -52,7 +46,11 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         } else if (node.getTarget() instanceof PrimaryExNode exNode) {
             VarSymbol var = (VarSymbol) currentScope.resolve(exNode.getValue());
             var.getGuardExpr().ifPresent(expressionNode -> expressionEvaluator.executeWithGuard(var,value,expressionNode));
-            memorySpace.setVariable(node.getVariableName(),value);
+            memorySpace.setVariable(var.getName(), value);
+        } else if (node.getTarget() instanceof ArrayAccessNode arrayAccessNode) {
+            var instance = (ArrayInstance) memorySpace.getVariable(arrayAccessNode.getName());
+            int index = ((BigDecimal)arrayAccessNode.getIndex().execute(this)).intValue();
+            instance.getValues().set(index-1,value);
         }
 
         return null;
@@ -111,7 +109,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     @Override
     public Object execute(FunctionCallNode node) {
         Class<? extends Symbol> aClass = currentScope.resolve(node.getName()).getClass();
-        if (aClass.equals(FunctionSymbol.class)) {
+        if (aClass.equals(FunctionAggregateSymbol.class)) {
             return processAsAFunction(node);
         }
         return processAsAStruct(node);
@@ -132,21 +130,21 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     private Object processAsAFunction(FunctionCallNode node) {
-        FunctionSymbol fun = (FunctionSymbol) currentScope.resolve(node.getName());
+        var fun = (FunctionAggregateSymbol) currentScope.resolve(node.getName());
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
-        pushScope(fun);
-        Map.Entry<List<Symbol>,BlockNode> finalFun = functionCallEvaluator.eval(fun,evaluatedArgs,memorySpace);
+        FunctionSymbol finalFun = functionCallEvaluator.eval(fun,evaluatedArgs,memorySpace);
         if(finalFun == null) {
             throw new RuntimeException("AAAAAAAAAA");
         }
-        functionCallEvaluator.assignArgumentsToParameters(finalFun.getKey(),evaluatedArgs);
+        memorySpace.pushScope(finalFun);
+        functionCallEvaluator.assignArgumentsToParameters(finalFun.getSymbols(),evaluatedArgs);
         Object ret = null;
         if(fun.getType()!=null) {
-            ret = finalFun.getValue().execute(this);
+            ret = finalFun.getBody().execute(this);
         }else {
-            finalFun.getValue().execute(this);
+            finalFun.getBody().execute(this);
         }
-        popScope(fun);
+        popScope(finalFun);
         return ret;
     }
 
@@ -222,6 +220,20 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
             return struct.getFields().get(node.getRight().get().getValue());
         }
         return null;
+    }
+
+    @Override
+    public Object execute(ArrayAccessNode node) {
+        var target = (ArrayInstance)node.getTarget().execute(this);
+        int index = ((BigDecimal)node.getIndex().execute(this)).intValue()-1;
+        return target.getValues().get(index);
+    }
+
+    @Override
+    public Object execute(ArrayNode node) {
+        var arrInstance = new ArrayInstance();
+        node.getElements().forEach(el->arrInstance.getValues().add(el.execute(this)));
+        return arrInstance;
     }
 
     private void pushScope(Scope scope) {

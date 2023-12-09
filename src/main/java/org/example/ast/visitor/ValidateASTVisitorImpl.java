@@ -5,8 +5,6 @@ import org.example.ast.BinaryOpNode;
 import org.example.exceptions.NonlegalStatementInStruct;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.ToManyTypesInGuardException;
-import org.example.scope.SymbolTable;
-import org.example.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,5 +84,16 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
         node.getRight().peekLeft(f->f.visit(this));
+    }
+
+    @Override
+    public void visit(ArrayNode node) {
+        node.getElements().forEach(e->e.visit(this));
+    }
+
+    @Override
+    public void visit(ArrayAccessNode node) {
+        node.getTarget().visit(this);
+        node.getIndex().visit(this);
     }
 }

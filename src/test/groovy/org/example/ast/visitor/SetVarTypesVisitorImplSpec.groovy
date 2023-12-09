@@ -42,7 +42,7 @@ class SetVarTypesVisitorImplSpec extends Specification {
             typesVisitor.visit(programNode)
         then:
             noExceptionThrown()
-            defNode.getVariable().getTypes().getName() == "num"
+            defNode.getVariable().getType().getName() == "num"
     }
 
 }

@@ -2,6 +2,7 @@ package org.example.interpreter;
 
 import org.example.ast.*;
 import org.example.ast.PrimaryExNode;
+import org.example.ast.ArrayAccessNode;
 
 public interface IdaInterpreter {
     Object execute(ProgramNode node);
@@ -22,4 +23,6 @@ public interface IdaInterpreter {
     Object execute(WhileStatementNode node);
     Object execute(StructureNode node);
     Object execute(DotOpNode node);
+    Object execute(ArrayAccessNode node);
+    Object execute(ArrayNode node);
 }

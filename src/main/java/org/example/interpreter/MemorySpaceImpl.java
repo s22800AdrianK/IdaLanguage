@@ -23,8 +23,8 @@ public class MemorySpaceImpl implements MemorySpace {
     public Object getVariable(String name) {
         return stack.stream()
                 .filter(s->s.containsKey(name))
-                .map(s->s.get(name))
                 .findFirst()
+                .map(s->s.get(name))
                 .orElse(null);
     }
 

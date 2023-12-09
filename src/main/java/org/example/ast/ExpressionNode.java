@@ -18,9 +18,5 @@ public abstract class ExpressionNode extends StatementNode {
     public void setEvalType(Type evalType) {
         this.evalType = evalType;
     }
-    @Override
-    public void visit(Visitor visitor) {
-        visitor.visit(this);
-    }
 
 }

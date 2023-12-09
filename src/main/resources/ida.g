@@ -83,11 +83,16 @@ primaryExpression
     : primary
     | functionCall
     | fieldAccess
+    | arrayAccess
+    ;
+
+arrayAccess
+    : primary '[' expression ']'
     ;
 
 fieldAccess
-    : expression '.' NAME
-    | expression '.' functionCall
+    : primary '.' NAME
+    | primary '.' functionCall
     ;
 
 primary
@@ -95,13 +100,21 @@ primary
     |   NUM
     |   STR
     |   BOOL
+    |   arrayExpr
     |   '(' expression ')'
     ;
+
+arrayExpr
+    : '[' (expression (',' expression)*)? ']'
 
 functionCall
     : NAME '(' (expression (',' expression)*)? ')'
     ;
 
+
+arrayTypeSpecifier
+    : typeSpecifier '[]'
+    ;
 
 typeSpecifier
     :   'int'

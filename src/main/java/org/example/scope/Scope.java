@@ -1,6 +1,5 @@
 package org.example.scope;
 
-import org.example.symbol.FunctionSymbol;
 import org.example.symbol.Symbol;
 import org.example.type.Type;
 

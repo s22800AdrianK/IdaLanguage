@@ -3,21 +3,20 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
-import org.example.exceptions.NotAFunctionException;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.ArgumentTypeMismatch;
 import org.example.exceptions.ImplementationArgumentNumberException;
 import org.example.scope.Scope;
 import org.example.scope.SymbolTable;
-import org.example.symbol.FunctionSymbol;
-import org.example.symbol.StructureSymbol;
-import org.example.symbol.Symbol;
+import org.example.symbol.*;
+import org.example.symbol.builtIn.ArrayBuiltInTypeSymbol;
 import org.example.token.TokenType;
 import org.example.type.Type;
 import org.example.type.TypeResolver;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,6 +33,9 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     public void visit(AssignmentNode node) {
         node.getTarget().visit(this);
         node.getExpression().visit(this);
+        if(!node.getTarget().getEvalType().equals(node.getExpression().getEvalType())) {
+            throw new RuntimeException("wrong types");
+        }
     }
 
     @Override
@@ -88,10 +90,10 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     }
 
     private void processAsAFunction(FunctionCallNode node) {
-        FunctionSymbol fn = (FunctionSymbol) currentScope.resolve(node.getName());
+        FunctionAggregateSymbol fn = (FunctionAggregateSymbol) currentScope.resolve(node.getName());
         node.getArguments().forEach(e->e.visit(this));
 
-        List<Symbol> params = fn.getImplementations().keySet().stream().toList().get(0);
+        List<Symbol> params = fn.getFunctionSymbols().get(0).getSymbols();
         if(params.size()!=node.getArguments().size()) {
             throw new RuntimeException("wrong number of call arguments");
         }
@@ -110,40 +112,14 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     @Override
     public void visit(FunctionDefNode node) {
         currentScope = node.getFunctionSymbol();
-
         node.getReturnType().ifPresent(e->e.visit(this));
         node.getFunctionSymbol().setType(node.getReturnType().map(TypeSpecifierNode::getType).orElse(null));
-
         node.getParameters().forEach(e->e.visit(this));
-
         node.getBody().visit(this);
-
         if (hasWrongReturnDeclaration(node)) {
             throw new RuntimeException("Wrong return declaration");
         }
 
-        var implementations = node.getFunctionSymbol().getImplementations();
-
-        Set<Integer> sizes = implementations.keySet().stream()
-                .map(List::size)
-                .collect(Collectors.toSet());
-
-        if(sizes.size()!=1) {
-            throw new ImplementationArgumentNumberException(node.getToken().getValue());
-        }
-
-        boolean typesMatch = IntStream.range(0,sizes.size())
-                .allMatch(i-> implementations.keySet()
-                                    .stream()
-                                    .filter(list -> list.size() > i)
-                                    .map(list->list.get(i).getType())
-                                    .distinct()
-                                    .limit(2)
-                                    .count()<=1);
-
-        if(!typesMatch) {
-            throw new ArgumentTypeMismatch(node.getToken().getValue());
-        }
         currentScope = node.getFunctionSymbol().getUpperScope();
     }
 
@@ -175,7 +151,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     @Override
     public void visit(ParameterNode node) {
         currentScope.resolve(node.getName()).setType(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
-        node.setTypes(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
+        node.setType(currentScope.resolveType(node.getTypeSpecifierNode().getTypeName()));
         node.getGuardExpression().ifPresent(e->e.visit(this));
     }
 
@@ -201,21 +177,29 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     @Override
     public void visit(TypeSpecifierNode node) {
-        node.setType(currentScope.resolveType(node.getTypeName()));
+        var type = currentScope.resolveType(node.getTypeName());
+        if (type == null) {
+            throw new RuntimeException("unknown type: "+node.getTypeName());
+        }
+        Type finType = node.isArrayType()?
+                IntStream.range(0,node.getArrTypeLevel())
+                    .mapToObj(i->(Function<Type,Type>)this::resolveArrayType)
+                    .reduce(Function.identity(),Function::andThen)
+                    .apply(type)
+                : type;
+        node.setType(finType);
     }
 
     @Override
     public void visit(VariableDefNode node) {
-            Type type = currentScope.resolveType(node.getVariable().getTypeSpecifierNode().getTypeName());
-            if (type == null) {
-                throw new RuntimeException("unknown type");
-            }
-            node.getVariable().setTypes(type);
+            node.getVariable().getTypeSpecifierNode().visit(this);
+            Type type = node.getVariable().getTypeSpecifierNode().getType();
+            node.getVariable().setType(type);
             currentScope.resolve(node.getVariable().getName()).setType(type);
             node.getInitializer().ifPresent(e->{
                 e.visit(this);
-                if(!node.getVariable().getTypes().equals(e.getEvalType())){
-                    throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getTypes().getName());
+                if(!node.getVariable().getType().equals(e.getEvalType())){
+                    throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getType().getName());
                 }
             });
             node.getVariable().visit(this);
@@ -264,4 +248,38 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         currentScope = structureSymbol.getUpperScope();
     }
 
+    @Override
+    public void visit(ArrayNode node) {
+        node.getElements().forEach(e->e.visit(this));
+        boolean isOneTypeArray = node.getElements()
+                .stream()
+                .map(ExpressionNode::getEvalType)
+                .distinct()
+                .limit(2)
+                .count() == 1;
+        if(!isOneTypeArray) {
+            throw new RuntimeException(node.getToken().getValue()+" is not oneTypeArray");
+        }
+        node.setEvalType(resolveArrayType(node.getElements().get(0).getEvalType()));
+    }
+
+    @Override
+    public void visit(ArrayAccessNode node) {
+        node.getTarget().visit(this);
+        node.getIndex().visit(this);
+        if(!node.getIndex().getEvalType().equals(currentScope.resolveType(TokenType.TYPE_NUMBER.getRegex()))) {
+            throw new RuntimeException();
+        }
+        node.setEvalType(node.getTarget().getEvalType());
+    }
+
+    private Type resolveArrayType(Type baseType) {
+        var arrType = ArrayBuiltInTypeSymbol.of(baseType,currentScope);
+        var type = currentScope.resolveType(arrType.getName());
+        if(type==null) {
+            currentScope.defineSymbol(arrType);
+            return arrType;
+        }
+        return type;
+    }
 }

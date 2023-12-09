@@ -8,12 +8,14 @@ import org.example.type.Type;
 import java.util.*;
 
 public class FunctionSymbol extends Symbol implements Scope {
-    private final Map<List<Symbol>,BlockNode> implementations = new LinkedHashMap<>();
+    private final List<Symbol> arguments;
+    private final BlockNode body;
     private final Scope upperScope;
     private final TypeSpecifierNode specifierNode;
     public FunctionSymbol(String name, List<Symbol> arguments, TypeSpecifierNode specifier, BlockNode body, Scope upperScope) {
         super(name);
-        implementations.put(arguments,body);
+        this.arguments = arguments;
+        this.body = body;
         this.upperScope = upperScope;
         this.specifierNode = specifier;
     }
@@ -30,8 +32,8 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     @Override
     public Symbol resolve(String name) {
-        return implementations.keySet()
-                .stream().flatMap(Collection::stream)
+        return arguments
+                .stream()
                 .filter(e->e.getName().equals(name))
                 .findFirst()
                 .orElse(getUpperScope() != null ? getUpperScope().resolve(name) : null);
@@ -39,16 +41,12 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     @Override
     public Type resolveType(String name) {
-        return implementations.keySet()
-                .stream().flatMap(Collection::stream)
+        return arguments
+                .stream()
                 .filter(e->e.getName().equals(name)&&e instanceof Type)
                 .map(e->(Type)e)
                 .findFirst()
                 .orElse(getUpperScope() != null ? getUpperScope().resolveType(name) : null);
-    }
-
-    public void addNewImplementation(List<Symbol> args,BlockNode body) {
-        this.implementations.put(args,body);
     }
 
     @Override
@@ -58,14 +56,15 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     @Override
     public List<Symbol> getSymbols() {
-        return implementations.keySet().stream().flatMap(List::stream).toList();
+        return arguments;
     }
 
-    public Map<List<Symbol>, BlockNode> getImplementations() {
-        return implementations;
-    }
 
     public TypeSpecifierNode getSpecifierNode() {
         return specifierNode;
+    }
+
+    public BlockNode getBody() {
+        return body;
     }
 }

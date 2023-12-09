@@ -4,6 +4,7 @@ import io.vavr.control.Either;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
+import org.example.ast.ArrayAccessNode;
 import org.example.lexer.Lexer;
 import org.example.token.Token;
 import org.example.token.TokenType;
@@ -262,6 +263,8 @@ public class IdaParser extends Parser {
         } else if (LA(1) == TokenType.STRING) {
             node = new PrimaryExNode(LT(1));
             match(TokenType.STRING);
+        } else if (LA(1) == TokenType.L_S_BRACK) {
+            node = arrayExpr();
         } else if (LA(1) == TokenType.L_BRACK) {
             match(TokenType.L_BRACK);
             node = expression();
@@ -269,6 +272,37 @@ public class IdaParser extends Parser {
         } else {
             throw new RuntimeException("expecting primary expression; found " + LT(1));
         }
+
+        if(LA(1)==TokenType.L_S_BRACK){
+            node = arrayAccess(node);
+        }
+
+        return node;
+    }
+
+    private ExpressionNode arrayAccess(ExpressionNode node) {
+        while (LA(1)==TokenType.L_S_BRACK){
+            match(TokenType.L_S_BRACK);
+            ExpressionNode index = expression();
+            match(TokenType.R_S_BRACK);
+            var arr = new ArrayAccessNode(node);
+            arr.setIndex(index);
+            node = arr;
+        }
+        return node;
+    }
+
+    private ExpressionNode arrayExpr() {
+        ArrayNode node = new ArrayNode(LT(1));
+        match(TokenType.L_S_BRACK);
+        if(LA(1)!=TokenType.R_S_BRACK) {
+            node.addExpr(expression());
+            while (LA(1)==TokenType.COMMA) {
+                match(TokenType.COMMA);
+                node.addExpr(expression());
+            }
+        }
+        match(TokenType.R_S_BRACK);
         return node;
     }
 
@@ -308,6 +342,11 @@ public class IdaParser extends Parser {
             case TYPE_STRING -> match(TokenType.TYPE_STRING);
             case NAME -> match(TokenType.NAME);
             default -> throw new RuntimeException("expecting typeSpecifier; found " + LT(1));
+        }
+        while (LA(1)==TokenType.L_S_BRACK) {
+            match(TokenType.L_S_BRACK);
+            match(TokenType.R_S_BRACK);
+            node.incrementarrTypeLevel();
         }
         return node;
     }

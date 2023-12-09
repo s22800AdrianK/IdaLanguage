@@ -1,6 +1,7 @@
 package org.example.pipeline;
 
 import org.example.ast.visitor.ExpressionTypesVisitorImpl;
+import org.example.ast.visitor.FuntionValidatiorVisitorImpl;
 import org.example.ast.visitor.ValidateASTVisitorImpl;
 import org.example.ast.visitor.SymbolTabVisitorImpl;
 import org.example.handler.Handler;
@@ -40,10 +41,12 @@ public class IdaProcessingPipeline {
         Handler symboTabVisitor = new SymbolTabVisitorImpl(symbolTable);
         TypeResolver resolver = new TypeResolverImpl(symbolTable);
         Handler expresionVisitor = new ExpressionTypesVisitorImpl(resolver,symbolTable);
+        Handler functionVisitor = new FuntionValidatiorVisitorImpl(symbolTable);
         Handler interpreter = new IdaInterpreterImpl(memorySpace,binaryOperationEvaluator,functionCallEvaluator,expressionEvaluator,symbolTable);
         setVarVisitor.setNextHandler(symboTabVisitor);
         symboTabVisitor.setNextHandler(expresionVisitor);
-        expresionVisitor.setNextHandler(interpreter);
+        expresionVisitor.setNextHandler(functionVisitor);
+        functionVisitor.setNextHandler(interpreter);
         this.handlerChain = setVarVisitor;
     }
 

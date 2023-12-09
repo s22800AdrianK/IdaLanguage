@@ -4,18 +4,15 @@ import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
 import org.example.handler.VisitorHandler;
-import org.example.exceptions.TypeNotDefinedException;
 import org.example.exceptions.VariableAlreadyDefinedException;
 import org.example.exceptions.VariableNotDefinedException;
 import org.example.scope.LocalScope;
 import org.example.scope.Scope;
-import org.example.symbol.FunctionSymbol;
-import org.example.symbol.StructureSymbol;
-import org.example.symbol.Symbol;
-import org.example.symbol.VarSymbol;
+import org.example.symbol.*;
 import org.example.token.TokenType;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableVisitor {
     private Scope currentScope;
@@ -51,18 +48,24 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     @Override
     public void visit(FunctionDefNode node) {
         List<Symbol> args = node.getParameters().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
-        FunctionSymbol func;
+        var func = new FunctionSymbol(node.getToken().getValue(), args, node.getReturnType().orElse(null), node.getBody(), currentScope);
         Symbol symbol = currentScope.resolve(node.getToken().getValue());
-        if((symbol instanceof FunctionSymbol existing)){
-            if(existing.getSpecifierNode().getTypeName().equals(node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null))){
+        if((symbol instanceof FunctionAggregateSymbol existing)){
+            String existingTypeName =
+                    existing.getFunctionSymbols().get(0).getSpecifierNode() != null ?
+                            existing.getFunctionSymbols().get(0).getSpecifierNode().getTypeName()
+                            : null;
+            String nodeReturnTypeName = node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null);
+            if(!Objects.equals(existingTypeName,nodeReturnTypeName)){
                 throw new RuntimeException("Function with the same name already exists but with a different return type");
             }
-            func = existing;
-            func.addNewImplementation(args,node.getBody());
+            existing.addFunctionSymbol(func);
         }else {
-            func = new FunctionSymbol(node.getToken().getValue(),args,node.getReturnType().orElse(null),node.getBody(),currentScope);
+            FunctionAggregateSymbol newAggregate = new FunctionAggregateSymbol(node.getToken().getValue());
+            newAggregate.addFunctionSymbol(func);
+            currentScope.defineSymbol(newAggregate);
         }
-        currentScope.defineSymbol(func);
+
         currentScope = func;
         node.setFunctionSymbol(func);
         node.getBody().visit(this);
@@ -90,13 +93,6 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     @Override
     public void visit(ProgramNode node) {
         node.getStatements().forEach(n -> n.visit(this));
-    }
-
-    @Override
-    public void visit(TypeSpecifierNode node) {
-        if(node.getToken().getType()== TokenType.NAME && !currentScope.checkIfAlreadyDefined(node.getTypeName())){
-            throw new TypeNotDefinedException(node.getTypeName());
-        }
     }
 
     @Override
@@ -138,6 +134,18 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
         node.getRight().peekLeft(f->f.visit(this));
+    }
+
+    @Override
+    public void visit(ArrayNode node) {
+        node.getElements().forEach(e->e.visit(this));
+
+    }
+
+    @Override
+    public void visit(ArrayAccessNode node) {
+        node.getTarget().visit(this);
+        node.getIndex().visit(this);
     }
 
 }

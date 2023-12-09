@@ -3,6 +3,7 @@ package org.example.interpreter;
 import org.example.ast.BlockNode;
 import org.example.ast.ExpressionNode;
 import org.example.ast.FunctionCallNode;
+import org.example.symbol.FunctionAggregateSymbol;
 import org.example.symbol.FunctionSymbol;
 import org.example.symbol.Symbol;
 import org.example.symbol.VarSymbol;
@@ -21,26 +22,33 @@ public class FunctionCallEvaluator {
         this.evaluator = evaluator;
     }
 
-    public Map.Entry<List<Symbol>,BlockNode> eval(FunctionSymbol fun, List<Object> evaluatedArgs, MemorySpace space){
-        return fun.getImplementations()
-                .entrySet()
-                .stream()
-                .filter(entry -> matchesArguments(entry.getKey(), evaluatedArgs, space))
+    public FunctionSymbol eval(FunctionAggregateSymbol funs, List<Object> evaluatedArgs, MemorySpace space){
+        return funs.getFunctionSymbols().stream()
+                .filter(fun -> matchesArguments(fun, evaluatedArgs, space))
                 .findFirst()
                 .orElse(null);
     }
-
-
-    public boolean matchesArguments(List<Symbol> parameters, List<Object> evaluatedArgs, MemorySpace space) {
-
-        for (int i = 0; i < parameters.size(); i++) {
-            VarSymbol var = (VarSymbol) parameters.get(i);
+    public boolean matchesArguments(List<Symbol> args, List<Object> evaluatedArgs, MemorySpace space) {
+        for (int i = 0; i < args.size(); i++) {
+            VarSymbol var = (VarSymbol) args.get(i);
             space.setVariable(var.getType().getName(), evaluatedArgs.get(i));
             if (var.getGuardExpr().isPresent() && !evaluator.evaluateGuardExpression(var.getGuardExpr().get())) {
                 return false;
             }
         }
+        return true;
+    }
 
+    public boolean matchesArguments(FunctionSymbol fun, List<Object> evaluatedArgs, MemorySpace space) {
+        memorySpace.pushScope(fun);
+        for (int i = 0; i < fun.getSymbols().size(); i++) {
+            VarSymbol var = (VarSymbol) fun.getSymbols().get(i);
+            space.setVariable(var.getType().getName(), evaluatedArgs.get(i));
+            if (var.getGuardExpr().isPresent() && !evaluator.evaluateGuardExpression(var.getGuardExpr().get())) {
+                return false;
+            }
+        }
+        memorySpace.pop();
         return true;
     }
 

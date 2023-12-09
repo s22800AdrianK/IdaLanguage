@@ -5,7 +5,6 @@ import org.example.interpreter.IdaInterpreter;
 import org.example.token.Token;
 import org.example.type.Type;
 
-import java.util.List;
 import java.util.Optional;
 
 public class ParameterNode extends BaseNode {
@@ -28,11 +27,11 @@ public class ParameterNode extends BaseNode {
         this.guardExpression = guardExpression;
     }
 
-    public Type getTypes() {
+    public Type getType() {
         return type;
     }
 
-    public void setTypes(Type type) {
+    public void setType(Type type) {
         this.type = type;
     }
 

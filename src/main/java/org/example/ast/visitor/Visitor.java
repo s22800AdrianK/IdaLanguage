@@ -40,4 +40,8 @@ public interface Visitor {
     void visit(StructureNode node);
 
     void visit(DotOpNode node);
+
+    void visit(ArrayNode node);
+
+    void visit(ArrayAccessNode node);
 }

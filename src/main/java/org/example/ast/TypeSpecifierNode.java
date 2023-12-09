@@ -7,6 +7,7 @@ import org.example.type.Type;
 
 public class TypeSpecifierNode extends BaseNode {
     private Type type;
+    private int arrTypeLevel;
     public TypeSpecifierNode(Token token) {
         super(token);
     }
@@ -28,5 +29,17 @@ public class TypeSpecifierNode extends BaseNode {
     @Override
     public Object execute(IdaInterpreter interpreter) {
         return interpreter.execute(this);
+    }
+
+    public boolean isArrayType() {
+        return arrTypeLevel!=0;
+    }
+
+    public void incrementarrTypeLevel() {
+        this.arrTypeLevel++;
+    }
+
+    public int getArrTypeLevel() {
+        return arrTypeLevel;
     }
 }
