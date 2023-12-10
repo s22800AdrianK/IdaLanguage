@@ -9,7 +9,7 @@ import java.util.*;
 
 public class StructureSymbol extends Symbol implements Type, Scope {
     private final Map<String,Symbol> fields = new HashMap<>();
-    private final Map<String,FunctionSymbol> functions = new HashMap<>();
+    private final Map<String,FunctionAggregateSymbol> functions = new HashMap<>();
     private final List<Symbol> constructorArgs;
     private final String name;
     private final Scope upperScope;
@@ -41,6 +41,9 @@ public class StructureSymbol extends Symbol implements Type, Scope {
     public Symbol resolve(String name) {
         if(fields.containsKey(name)) {
             return fields.get(name);
+        }
+        if(functions.containsKey(name)) {
+            return functions.get(name);
         }
         return constructorArgs.stream()
                 .filter(e->e.getName().equals(name))
@@ -79,7 +82,7 @@ public class StructureSymbol extends Symbol implements Type, Scope {
         symbols.addAll(constructorArgs);
         return symbols;
     }
-    public Map<String, FunctionSymbol> getFunctions() {
+    public Map<String, FunctionAggregateSymbol> getFunctions() {
         return functions;
     }
     public Map<String, Symbol> getFields(){ return fields;}

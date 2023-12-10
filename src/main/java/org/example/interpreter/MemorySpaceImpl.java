@@ -1,6 +1,7 @@
 package org.example.interpreter;
 
 import org.example.scope.Scope;
+import org.example.symbol.StructureSymbol;
 import org.example.symbol.Symbol;
 import org.example.symbol.builtIn.BuiltInTypeSymbol;
 
@@ -42,5 +43,7 @@ public class MemorySpaceImpl implements MemorySpace {
     }
 
 
-
+    public void pushStruct(StructureInstance structureInstance) {
+        stack.push(structureInstance.getFields());
+    }
 }

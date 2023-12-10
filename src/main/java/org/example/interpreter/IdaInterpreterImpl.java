@@ -217,11 +217,21 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     public Object execute(DotOpNode node) {
         Object left = node.getLeft().execute(this);
         if(left instanceof StructureInstance struct) {
-            return struct.getFields().get(node.getRight().get().getValue());
+            return node.getRight().isRight()?
+                    struct.getFields().get(node.getRight().get().getValue())
+                    : execStructFunction(struct,node.getRight().getLeft());
         }
         return null;
     }
 
+    private Object execStructFunction(StructureInstance struct, FunctionCallNode node) {
+        memorySpace.pushStruct(struct);
+        currentScope = struct.getStruct();
+        Object ret = node.execute(this);
+        memorySpace.pop();
+        currentScope = struct.getStruct().getUpperScope();
+        return ret;
+    }
     @Override
     public Object execute(ArrayAccessNode node) {
         var target = (ArrayInstance)node.getTarget().execute(this);

@@ -1,6 +1,7 @@
 package org.example.interpreter;
 
 import org.example.ast.ExpressionNode;
+import org.example.exceptions.ViolatedGuardException;
 import org.example.symbol.VarSymbol;
 
 public class ExpressionEvaluator {
@@ -9,7 +10,7 @@ public class ExpressionEvaluator {
     public void executeWithGuard(VarSymbol var, Object value, ExpressionNode expressionNode) {
         memorySpace.setVariable(var.getType().getName(), value);
         if (!evaluateGuardExpression(expressionNode)) {
-            throw new RuntimeException("NIE WOLNO TAK");
+            throw new ViolatedGuardException(var.getName(),expressionNode.getToken().getLine());
         }
         memorySpace.setVariable(var.getType().getName(), null);
     }

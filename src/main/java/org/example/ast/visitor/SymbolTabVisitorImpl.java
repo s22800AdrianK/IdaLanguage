@@ -123,7 +123,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
         currentScope = struct;
         node.getBody().visit(this);
         node.getBody().getScope().getSymbols().forEach(symbol -> {
-            if(symbol instanceof FunctionSymbol functionSymbol) {
+            if(symbol instanceof FunctionAggregateSymbol functionSymbol) {
                 struct.getFunctions().put(functionSymbol.getName(),functionSymbol);
             }else {
                 struct.getFields().put(symbol.getName(),symbol);

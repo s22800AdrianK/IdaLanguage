@@ -9,4 +9,5 @@ public interface MemorySpace {
     Object getVariable(String name);
     Map<String,Object> pop();
     void pushScope(Scope scope);
+    void pushStruct(StructureInstance structureInstance);
 }

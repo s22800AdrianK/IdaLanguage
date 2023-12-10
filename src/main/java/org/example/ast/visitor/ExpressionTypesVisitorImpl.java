@@ -240,7 +240,9 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
             if(!structureSymbol.checkIfHasFieldOrFunction(fcall.getName())) {
                 throw new RuntimeException("not a function in structure");
             }
+            currentScope = structureSymbol;
             processAsAFunction(fcall);
+            currentScope = structureSymbol.getUpperScope();
             node.setEvalType(fcall.getEvalType());
         });
     }

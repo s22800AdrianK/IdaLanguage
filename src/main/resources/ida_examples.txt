@@ -108,7 +108,7 @@ fn test(a:A) {
 }
 
 st A() {
- var:num
+ var:num = 10
 }
 
 test(A())
@@ -117,3 +117,11 @@ test(A())
 
 fn test():num[] {[1,2,3,4,5]}
 print test()[5]
+
+=======================
+
+st test(a:str,b:str) {
+  fn toString():str {"a "+a+" b "+b}
+}
+
+print test("test1","test2").toString()
