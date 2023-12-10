@@ -136,10 +136,10 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         if(finalFun == null) {
             throw new RuntimeException("AAAAAAAAAA");
         }
-        memorySpace.pushScope(finalFun);
+        pushScope(finalFun);
         functionCallEvaluator.assignArgumentsToParameters(finalFun.getSymbols(),evaluatedArgs);
         Object ret = null;
-        if(fun.getType()!=null) {
+        if(finalFun.getType()!=null) {
             ret = finalFun.getBody().execute(this);
         }else {
             finalFun.getBody().execute(this);

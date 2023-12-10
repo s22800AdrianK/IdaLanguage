@@ -87,7 +87,7 @@ primaryExpression
     ;
 
 arrayAccess
-    : primary '[' expression ']'
+    : primaryExpression '[' expression ']'
     ;
 
 fieldAccess

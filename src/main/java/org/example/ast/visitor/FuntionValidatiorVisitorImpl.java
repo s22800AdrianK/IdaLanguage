@@ -54,7 +54,7 @@ public class FuntionValidatiorVisitorImpl extends VisitorHandler implements Funt
                 .collect(Collectors.toSet());
 
         if (argumentCounts.size() != 1) {
-            throw new ImplementationArgumentNumberException(node.getToken().getValue());
+            throw new ImplementationArgumentNumberException(node.getToken().getValue(),node.getToken().getLine());
         }
 
         boolean typesMatch = IntStream.range(0, argumentCounts.iterator().next())
@@ -65,7 +65,7 @@ public class FuntionValidatiorVisitorImpl extends VisitorHandler implements Funt
                         .count() <= 1);
 
         if (!typesMatch) {
-            throw new ArgumentTypeMismatch(node.getToken().getValue());
+            throw new ArgumentTypeMismatch(node.getToken().getValue(),node.getToken().getLine());
         }
     }
 

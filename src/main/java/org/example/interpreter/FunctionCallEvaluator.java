@@ -45,6 +45,7 @@ public class FunctionCallEvaluator {
             VarSymbol var = (VarSymbol) fun.getSymbols().get(i);
             space.setVariable(var.getType().getName(), evaluatedArgs.get(i));
             if (var.getGuardExpr().isPresent() && !evaluator.evaluateGuardExpression(var.getGuardExpr().get())) {
+                memorySpace.pop();
                 return false;
             }
         }

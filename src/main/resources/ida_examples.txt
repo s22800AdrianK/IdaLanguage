@@ -82,3 +82,38 @@ print [[1,2,3],[4,5,6]][1][2]
 
 a:num[][] = [[1,2],[3,4]]
 print a[1][2]
+
+=======================
+
+st A(v1:num) {
+  var:num = v1+2
+}
+a:A = A(1)
+
+fn fun(in:A) {
+    print "class A : "+in.var
+    in.var = 99
+}
+
+fun(a)
+print a.var
+
+=======================
+
+fn test(a:A) {
+    st A() {
+      var:num = 20
+    }
+    print a.var
+}
+
+st A() {
+ var:num
+}
+
+test(A())
+
+=======================
+
+fn test():num[] {[1,2,3,4,5]}
+print test()[5]

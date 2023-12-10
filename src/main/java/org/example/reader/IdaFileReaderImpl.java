@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 public class IdaFileReaderImpl implements IdaFileReader{
     private static final String idaFileExtension = "ida";
 
-
     @Override
     public String readFile(String path) throws IOException {
         Path pathToFile = Paths.get(path);

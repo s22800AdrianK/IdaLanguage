@@ -81,7 +81,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     @Override
     public void visit(PrimaryExNode node) {
         if(node.getToken().getType()==TokenType.NAME && !currentScope.checkIfAlreadyDefined(node.getValue())){
-            throw new VariableNotDefinedException(node.getValue());
+            throw new VariableNotDefinedException(node.getValue(),node.getToken().getLine());
         }
     }
 
@@ -99,7 +99,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     public void visit(VariableDefNode node) {
         Symbol var = new VarSymbol(node.getVariable().getName(), node.getVariable().getGuardExpression().orElse(null));
         if(currentScope.checkIfAlreadyDefined(var.getName())){
-            throw new VariableAlreadyDefinedException(node.getVariable().getName());
+            throw new VariableAlreadyDefinedException(node.getVariable().getName(),node.getVariable().getToken().getLine());
         }
         currentScope.defineSymbol(var);
         node.getInitializer().ifPresent(e->e.visit(this));
@@ -112,9 +112,12 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
     @Override
     public void visit(StructureNode node) {
         if(currentScope.checkIfAlreadyDefined(node.getName())) {
-            throw new VariableAlreadyDefinedException(node.getName());
+            throw new VariableAlreadyDefinedException(node.getName(),node.getToken().getLine());
         }
-        List<Symbol> args = node.getConstructorParams().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
+        List<Symbol> args = node.getConstructorParams()
+                .stream()
+                .map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null)))
+                .toList();
         StructureSymbol struct = new StructureSymbol(args, node.getName(),currentScope, node.getBody());
         currentScope.defineSymbol(struct);
         currentScope = struct;

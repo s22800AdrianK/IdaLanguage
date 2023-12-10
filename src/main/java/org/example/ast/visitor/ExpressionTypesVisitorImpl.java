@@ -66,7 +66,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     @Override
     public void visit(FunctionCallNode node) {
         Class<? extends Symbol> aClass = currentScope.resolve(node.getName()).getClass();
-        if (aClass.equals(FunctionSymbol.class)) {
+        if (aClass.equals(FunctionAggregateSymbol.class)) {
             processAsAFunction(node);
         } else if (aClass.equals(StructureSymbol.class)) {
             processAsAStruct(node);
@@ -104,7 +104,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
             throw new RuntimeException();
         }
 
-        node.setEvalType(fn.getType());
+        node.setEvalType(fn.getFunctionSymbols().get(0).getType());
     }
 
 
@@ -231,21 +231,18 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);
         StructureSymbol structureSymbol = (StructureSymbol) node.getLeft().getEvalType();
-        currentScope = structureSymbol;
         node.getRight().peek(token -> {
             if(!structureSymbol.checkIfHasFieldOrFunction(token.getValue())) {
                 throw new RuntimeException("not a field in structure");
             }
-            node.setEvalType(currentScope.resolve(token.getValue()).getType());
+            node.setEvalType(structureSymbol.resolve(token.getValue()).getType());
         }).peekLeft(fcall -> {
             if(!structureSymbol.checkIfHasFieldOrFunction(fcall.getName())) {
                 throw new RuntimeException("not a function in structure");
-
             }
             processAsAFunction(fcall);
             node.setEvalType(fcall.getEvalType());
         });
-        currentScope = structureSymbol.getUpperScope();
     }
 
     @Override

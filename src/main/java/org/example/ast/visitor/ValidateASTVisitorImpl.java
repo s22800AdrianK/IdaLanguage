@@ -42,7 +42,7 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
         }
         node.getGuardExpression().get().visit(this);
         if(types.size()>1){
-            throw new ToManyTypesInGuardException(node.getName());
+            throw new ToManyTypesInGuardException(node.getName(),node.getToken().getLine());
         }
         node.setTypeSpecifierNode(new TypeSpecifierNode(types.get(0).getToken()));
         types.clear();
@@ -75,7 +75,9 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
                 .stream()
                 .filter(st->!st.getClass().equals(VariableDefNode.class) && !st.getClass().equals(FunctionDefNode.class))
                 .findFirst()
-                .ifPresent(e->{throw new NonlegalStatementInStruct(node.getToken().getValue());});
+                .ifPresent(e->{
+                    throw new NonlegalStatementInStruct(node.getToken().getValue(),node.getToken().getLine());
+                });
         node.getConstructorParams().forEach(e->e.visit(this));
         node.getBody().visit(this);
     }

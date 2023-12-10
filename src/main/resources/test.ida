@@ -1,8 +1,1 @@
-fn test(a:(num>5)) {
-  print "wartosc "+a+" jest wieksza od 5"
-}
-fn test(a:num) {
-  print "wartosc "+a+" nie jest wieksza od 5"
-}
-                
-test(3)
+var:(num==2) = 4

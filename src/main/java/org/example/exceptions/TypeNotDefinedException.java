@@ -1,9 +1,7 @@
 package org.example.exceptions;
 
-public class TypeNotDefinedException extends RuntimeException{
-    public TypeNotDefinedException(String typeName) {
-        super(
-                "Type: "+typeName+"wasn't defined before usage"
-        );
+public class TypeNotDefinedException extends IdaException {
+    public TypeNotDefinedException(String typeName, int line) {
+        super("Type: "+typeName+"wasn't defined before usage",line);
     }
 }

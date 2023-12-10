@@ -1,14 +1,10 @@
 package org.example.exceptions;
 
-import org.example.type.Type;
-
-import java.util.List;
-
-public class ToManyTypesInGuardException extends RuntimeException{
-
-    public ToManyTypesInGuardException(String varName){
+public class ToManyTypesInGuardException extends IdaException {
+    public ToManyTypesInGuardException(String varName, int line){
         super(
-                "To many types declared for variable:"+varName+" inside guard expression. There can be only one"
+                "To many types declared for variable '"+varName+"' inside guard expression. There can be only one",
+                line
         );
     }
 }

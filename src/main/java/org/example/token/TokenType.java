@@ -3,7 +3,7 @@ package org.example.token;
 import java.util.EnumSet;
 
 public enum TokenType {
-    WHITESPACE("\\s+|\\t+"),
+    WHITESPACE("\\s+"),
     EOF_TYPE("<EOF>"),
     NUMBER("\\d+(\\.\\d+)?"),
     STRING("\"(\\\\.|[^\\\\\"])*\""),
@@ -28,6 +28,7 @@ public enum TokenType {
     R_C_BRACK("\\}"),
     L_S_BRACK("\\["),
     R_S_BRACK("\\]"),
+    NAME("[a-zA-Z_][a-zA-Z_0-9]*"),
     IF("if"),
     ELSE("else"),
     PRINT("print"),
@@ -36,7 +37,6 @@ public enum TokenType {
     TYPE_STRING("str"),
     TYPE_BOOL("bool"),
     STRUCT("st"),
-    NAME("[a-zA-Z_][a-zA-Z_0-9]*"),
     COMMA(","),
     EQUALS("="),
     OR("\\|\\|"),
@@ -65,4 +65,16 @@ public enum TokenType {
             OR,
             AND
     );
+
+    public static final EnumSet<TokenType> nameLikeTokens = EnumSet.of(
+            IF,
+            ELSE,
+            PRINT,
+            WHILE,
+            TYPE_NUMBER,
+            TYPE_STRING,
+            TYPE_BOOL,
+            STRUCT
+    );
 }
+

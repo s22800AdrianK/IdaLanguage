@@ -82,7 +82,8 @@ public class IdaParser extends Parser {
         return type == TokenType.NAME
                 || type == TokenType.NUMBER
                 || type == TokenType.STRING
-                || type == TokenType.L_BRACK;
+                || type == TokenType.L_BRACK
+                || type == TokenType.L_S_BRACK;
     }
 
     private StatementNode nameStartStatement() {
@@ -384,7 +385,7 @@ public class IdaParser extends Parser {
         if(LA(1)==TokenType.NAME){
             params.add(parameter());
         }
-        while (LA(1) == TokenType.NAME) {
+        while (LA(1) == TokenType.COMMA) {
             match(TokenType.COMMA);
             params.add(parameter());
         }
@@ -424,7 +425,7 @@ public class IdaParser extends Parser {
         Token token = LT(1);
         if(LA(1)==TokenType.MINUS) {
             match(TokenType.MINUS);
-            token = new Token(TokenType.NUMBER,"-"+LT(1).getValue());
+            token = new Token(TokenType.NUMBER,"-"+LT(1).getValue(), token.getLine());
         }
         return token;
     }

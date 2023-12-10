@@ -27,7 +27,7 @@ public class FunctionSymbol extends Symbol implements Scope {
 
     @Override
     public void defineSymbol(Symbol symbol) {
-        throw new RuntimeException();
+        getUpperScope().defineSymbol(symbol);
     }
 
     @Override
