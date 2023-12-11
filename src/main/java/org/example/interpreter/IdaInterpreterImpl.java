@@ -118,15 +118,16 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     private Object processAsAStruct(FunctionCallNode node) {
         StructureSymbol structure = (StructureSymbol) currentScope.resolve(node.getName());
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
-        pushScope(structure);
+        var strInst = new StructureInstance(structure);
+        pushStruct(strInst);
         var res = functionCallEvaluator.matchesArguments(structure.getConstructorArgs(),evaluatedArgs,memorySpace);
         if(!res) {
             throw new RuntimeException("SSSSSS");
         }
         functionCallEvaluator.assignArgumentsToParameters(structure.getConstructorArgs(),evaluatedArgs);
         structure.getBody().getStatements().forEach(e->e.execute(this));
-        var structFields = popScope(structure);
-        return new StructureInstance(structFields,evaluatedArgs,structure);
+        popScope(structure);
+        return strInst;
     }
 
     private Object processAsAFunction(FunctionCallNode node) {
@@ -161,7 +162,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
             case NUMBER -> new BigDecimal(node.getValue());
             case STRING -> node.getValue();
             case BOOL -> node.getValue().equals("true");
-            case NAME -> memorySpace.getVariable(node.getValue());
+            case NAME, THIS_KEYWORD -> memorySpace.getVariable(node.getValue());
             default -> null;
         };
     }
@@ -217,8 +218,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     public Object execute(DotOpNode node) {
         Object left = node.getLeft().execute(this);
         if(left instanceof StructureInstance struct) {
-            return node.getRight().isRight()?
-                    struct.getFields().get(node.getRight().get().getValue())
+            return node.getRight().isRight()? struct.getFields().get(node.getRight().get().getValue())
                     : execStructFunction(struct,node.getRight().getLeft());
         }
         return null;
@@ -227,7 +227,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     private Object execStructFunction(StructureInstance struct, FunctionCallNode node) {
         memorySpace.pushStruct(struct);
         currentScope = struct.getStruct();
-        Object ret = node.execute(this);
+        Object ret = processAsAFunction(node);
         memorySpace.pop();
         currentScope = struct.getStruct().getUpperScope();
         return ret;
@@ -249,6 +249,16 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     private void pushScope(Scope scope) {
         memorySpace.pushScope(scope);
         currentScope = scope;
+    }
+
+    private void pushStruct(StructureInstance str) {
+        memorySpace.pushStruct(str);
+        currentScope = str.getStruct();
+    }
+
+    private Map<String,Object> popStr(StructureInstance str) {
+        currentScope = str.getStruct().getUpperScope();
+        return memorySpace.pop();
     }
 
     private Map<String,Object> popScope(Scope scope) {

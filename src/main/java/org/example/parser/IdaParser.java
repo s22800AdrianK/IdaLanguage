@@ -83,7 +83,8 @@ public class IdaParser extends Parser {
                 || type == TokenType.NUMBER
                 || type == TokenType.STRING
                 || type == TokenType.L_BRACK
-                || type == TokenType.L_S_BRACK;
+                || type == TokenType.L_S_BRACK
+                || type == TokenType.THIS_KEYWORD;
     }
 
     private StatementNode nameStartStatement() {
@@ -258,6 +259,9 @@ public class IdaParser extends Parser {
                 node = new PrimaryExNode(LT(1));
                 match(TokenType.NAME);
             }
+        } else if (LA(1)==TokenType.THIS_KEYWORD) {
+            node = new PrimaryExNode(LT(1));
+            match(TokenType.THIS_KEYWORD);
         } else if (isNumber(LA(1),LA(2))) {
             node = new PrimaryExNode(handleNumber());
             match(TokenType.NUMBER);

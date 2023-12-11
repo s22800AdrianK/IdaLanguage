@@ -125,3 +125,16 @@ st test(a:str,b:str) {
 }
 
 print test("test1","test2").toString()
+
+======================
+
+st test(a:str,b:str) {
+  var:num = 0
+  fn toString():str { "var: "+var }
+  fn retThis():test {
+    var = var+1
+    this
+  }
+}
+
+print test("test1","test2").retThis().retThis().retThis().toString()

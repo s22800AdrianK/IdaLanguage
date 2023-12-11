@@ -3,15 +3,17 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.exceptions.NonlegalStatementInStruct;
+import org.example.exceptions.ThisKywordNotAllowedException;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.ToManyTypesInGuardException;
+import org.example.token.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateASTVisitor {
     private final List<PrimaryGuardNode> types = new ArrayList<>();
-
+    private  boolean isInStruct = false;
     @Override
     public void visit(BinaryOpNode node) {
         node.getLeft().visit(this);
@@ -49,6 +51,13 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
     }
 
     @Override
+    public void visit(PrimaryExNode node) {
+        if(!isInStruct&&node.getToken().getType()== TokenType.THIS_KEYWORD) {
+            throw new ThisKywordNotAllowedException(node.getToken().getLine());
+        }
+    }
+
+    @Override
     public void visit(ProgramNode node) {
         node.getStatements().forEach(e -> e.visit(this));
     }
@@ -71,6 +80,7 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
 
     @Override
     public void visit(StructureNode node) {
+        isInStruct=!isInStruct;
         node.getBody().getStatements()
                 .stream()
                 .filter(st->!st.getClass().equals(VariableDefNode.class) && !st.getClass().equals(FunctionDefNode.class))
@@ -80,6 +90,7 @@ public class ValidateASTVisitorImpl extends VisitorHandler implements ValidateAS
                 });
         node.getConstructorParams().forEach(e->e.visit(this));
         node.getBody().visit(this);
+        isInStruct=!isInStruct;
     }
 
     @Override

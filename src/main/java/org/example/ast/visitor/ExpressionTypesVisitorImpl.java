@@ -3,6 +3,8 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
+import org.example.exceptions.OperatorNotAllowedException;
+import org.example.exceptions.WrongTypeAssignedException;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.ArgumentTypeMismatch;
 import org.example.exceptions.ImplementationArgumentNumberException;
@@ -34,7 +36,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         node.getTarget().visit(this);
         node.getExpression().visit(this);
         if(!node.getTarget().getEvalType().equals(node.getExpression().getEvalType())) {
-            throw new RuntimeException("wrong types");
+            throw new WrongTypeAssignedException(node.getToken().getLine());
         }
     }
 
@@ -46,9 +48,11 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         right.visit(this);
         Type ret = typeResolver.getEvalType(node.getOperator(), left.getEvalType(), right.getEvalType());
         if (ret == null) {
-            throw new RuntimeException(
-                    "operator:" + node.getOperator() + "not allowed for:" + left.getEvalType().getName() + " and " + right.getEvalType().getName()
-            );
+            throw new OperatorNotAllowedException(
+                    node.getOperator().getRegex(),
+                    left.getEvalType().getName(),
+                    right.getEvalType().getName(),
+                    node.getToken().getLine());
         }
         node.setEvalType(ret);
     }
@@ -161,7 +165,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
             case NUMBER -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_NUMBER.getRegex()));
             case STRING -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_STRING.getRegex()));
             case BOOL -> node.setEvalType(currentScope.resolveType(TokenType.TYPE_BOOL.getRegex()));
-            case NAME -> node.setEvalType(currentScope.resolve(node.getValue()).getType());
+            case NAME,THIS_KEYWORD -> node.setEvalType(currentScope.resolve(node.getValue()).getType());
         }
     }
 

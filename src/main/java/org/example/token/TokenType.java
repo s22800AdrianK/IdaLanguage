@@ -37,6 +37,7 @@ public enum TokenType {
     TYPE_STRING("str"),
     TYPE_BOOL("bool"),
     STRUCT("st"),
+    THIS_KEYWORD("this"),
     COMMA(","),
     EQUALS("="),
     OR("\\|\\|"),
@@ -74,7 +75,8 @@ public enum TokenType {
             TYPE_NUMBER,
             TYPE_STRING,
             TYPE_BOOL,
-            STRUCT
+            STRUCT,
+            THIS_KEYWORD
     );
 }
 

@@ -3,6 +3,7 @@ package org.example.ast.visitor;
 import org.example.ast.*;
 import org.example.ast.BinaryOpNode;
 import org.example.ast.PrimaryExNode;
+import org.example.exceptions.FunctionAlreadyDefinedException;
 import org.example.handler.VisitorHandler;
 import org.example.exceptions.VariableAlreadyDefinedException;
 import org.example.exceptions.VariableNotDefinedException;
@@ -57,7 +58,7 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
                             : null;
             String nodeReturnTypeName = node.getReturnType().map(TypeSpecifierNode::getTypeName).orElse(null);
             if(!Objects.equals(existingTypeName,nodeReturnTypeName)){
-                throw new RuntimeException("Function with the same name already exists but with a different return type");
+                throw new FunctionAlreadyDefinedException(node.getFunctionSymbol().getName(),node.getToken().getLine());
             }
             existing.addFunctionSymbol(func);
         }else {
@@ -121,6 +122,9 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
         StructureSymbol struct = new StructureSymbol(args, node.getName(),currentScope, node.getBody());
         currentScope.defineSymbol(struct);
         currentScope = struct;
+        var ths = new VarSymbol(TokenType.THIS_KEYWORD.getRegex(),null);
+        ths.setType(struct);
+        currentScope.defineSymbol(ths);
         node.getBody().visit(this);
         node.getBody().getScope().getSymbols().forEach(symbol -> {
             if(symbol instanceof FunctionAggregateSymbol functionSymbol) {

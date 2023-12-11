@@ -13,9 +13,6 @@ public interface ValidateASTVisitor extends Visitor {
 
     default void visit(FunctionCallNode node) {}
 
-    default void visit(PrimaryExNode node) {
-    }
-
     default void visit(PrintStatementNode node) {
     }
 

@@ -100,6 +100,7 @@ primary
     |   NUM
     |   STR
     |   BOOL
+    |   THIS
     |   arrayExpr
     |   '(' expression ')'
     ;
@@ -127,3 +128,4 @@ NAME  :   [a-zA-Z_][a-zA-Z_0-9]*;
 NUM :     -?[0-9]+ '.' [0-9]+;
 STR :  "\"(\.|[^\\"])*\"";
 BOOL : 'true' | 'false'
+THIS : 'this'
