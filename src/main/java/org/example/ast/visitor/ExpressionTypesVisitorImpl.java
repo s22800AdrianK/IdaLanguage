@@ -30,10 +30,13 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         this.typeResolver = typeResolver;
         currentScope = symbolTable;
     }
-
     @Override
     public void visit(AssignmentNode node) {
         node.getTarget().visit(this);
+        if(node.getExpression() instanceof ArrayNode arrayNode && arrayNode.getElements().isEmpty()) {
+            node.getExpression().setEvalType(node.getTarget().getEvalType());
+            return;
+        }
         node.getExpression().visit(this);
         if(!node.getTarget().getEvalType().equals(node.getExpression().getEvalType())) {
             throw new WrongTypeAssignedException(node.getToken().getLine());
@@ -69,18 +72,17 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
 
     @Override
     public void visit(FunctionCallNode node) {
-        Class<? extends Symbol> aClass = currentScope.resolve(node.getName()).getClass();
-        if (aClass.equals(FunctionAggregateSymbol.class)) {
-            processAsAFunction(node);
-        } else if (aClass.equals(StructureSymbol.class)) {
-            processAsAStruct(node);
+        Symbol symbol = currentScope.resolve(node.getName());
+        if (symbol instanceof FunctionAggregateSymbol functionAggregateSymbol) {
+            processAsAFunction(node,functionAggregateSymbol);
+        } else if (symbol instanceof StructureSymbol structureSymbol) {
+            processAsAStruct(node,structureSymbol);
         }
     }
 
-    private void processAsAStruct(FunctionCallNode node) {
-        StructureSymbol st = (StructureSymbol) currentScope.resolve(node.getName());
+    private void processAsAStruct(FunctionCallNode node, StructureSymbol structureSymbol) {
         node.getArguments().forEach(e->e.visit(this));
-        List<Symbol> args = st.getConstructorArgs();
+        List<Symbol> args = structureSymbol.getConstructorArgs();
         if(args.size()!=node.getArguments().size()) {
             throw new RuntimeException("wrong number of constructor arguments");
         }
@@ -90,14 +92,12 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         if(!typesMatch) {
             throw new RuntimeException();
         }
-        node.setEvalType(st);
+        node.setEvalType(structureSymbol);
     }
 
-    private void processAsAFunction(FunctionCallNode node) {
-        FunctionAggregateSymbol fn = (FunctionAggregateSymbol) currentScope.resolve(node.getName());
+    private void processAsAFunction(FunctionCallNode node, FunctionAggregateSymbol functionAggregateSymbol) {
         node.getArguments().forEach(e->e.visit(this));
-
-        List<Symbol> params = fn.getFunctionSymbols().get(0).getSymbols();
+        List<Symbol> params = functionAggregateSymbol.getFunctionSymbols().get(0).getSymbols();
         if(params.size()!=node.getArguments().size()) {
             throw new RuntimeException("wrong number of call arguments");
         }
@@ -108,7 +108,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
             throw new RuntimeException();
         }
 
-        node.setEvalType(fn.getFunctionSymbols().get(0).getType());
+        node.setEvalType(functionAggregateSymbol.getFunctionSymbols().get(0).getType());
     }
 
 
@@ -245,7 +245,7 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
                 throw new RuntimeException("not a function in structure");
             }
             currentScope = structureSymbol;
-            processAsAFunction(fcall);
+            fcall.visit(this);
             currentScope = structureSymbol.getUpperScope();
             node.setEvalType(fcall.getEvalType());
         });

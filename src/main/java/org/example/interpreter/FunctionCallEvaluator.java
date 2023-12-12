@@ -11,6 +11,7 @@ import org.example.symbol.VarSymbol;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,11 +23,10 @@ public class FunctionCallEvaluator {
         this.evaluator = evaluator;
     }
 
-    public FunctionSymbol eval(FunctionAggregateSymbol funs, List<Object> evaluatedArgs, MemorySpace space){
+    public Optional<FunctionSymbol> eval(FunctionAggregateSymbol funs, List<Object> evaluatedArgs, MemorySpace space){
         return funs.getFunctionSymbols().stream()
                 .filter(fun -> matchesArguments(fun, evaluatedArgs, space))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
     public boolean matchesArguments(List<Symbol> args, List<Object> evaluatedArgs, MemorySpace space) {
         for (int i = 0; i < args.size(); i++) {

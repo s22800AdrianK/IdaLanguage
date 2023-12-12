@@ -28,7 +28,7 @@ public class TypeSpecifierNode extends BaseNode {
     }
     @Override
     public Object execute(IdaInterpreter interpreter) {
-        return interpreter.execute(this);
+        return null;
     }
 
     public boolean isArrayType() {

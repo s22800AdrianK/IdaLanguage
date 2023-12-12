@@ -34,6 +34,7 @@ public class WhileStatementNode extends StatementNode {
 
     @Override
     public Object execute(IdaInterpreter interpreter) {
-        return interpreter.execute(this);
+        interpreter.execute(this);
+        return null;
     }
 }

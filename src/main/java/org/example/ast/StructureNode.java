@@ -31,9 +31,10 @@ public class StructureNode extends StatementNode{
     public void visit(Visitor visitor) {
         visitor.visit(this);
     }
+
     @Override
     public Object execute(IdaInterpreter interpreter) {
-        return interpreter.execute(this);
+        return null;
     }
 
     public StructureSymbol getSymbol() {

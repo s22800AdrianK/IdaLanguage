@@ -18,10 +18,6 @@ public abstract class BaseNode {
         return token;
     }
 
-    public boolean isAbstractNode() {
-        return token == null;
-    }
-
     public abstract void visit(Visitor visitor);
 
     public abstract Object execute(IdaInterpreter interpreter);

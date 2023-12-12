@@ -8,7 +8,6 @@ import org.example.scope.Scope;
 import org.example.symbol.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 public class IdaInterpreterImpl implements IdaInterpreter, Handler {
@@ -32,15 +31,13 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     @Override
-    public Object execute(ProgramNode node) {
+    public void execute(ProgramNode node) {
         node.getStatements().forEach(e->e.execute(this));
-        return null;
     }
 
     @Override
-    public Object execute(AssignmentNode node) {
+    public void execute(AssignmentNode node) {
         Object value = node.getExpression().execute(this);
-
         if(node.getTarget() instanceof DotOpNode dotOpNode) {
             assignToField(dotOpNode, value);
         } else if (node.getTarget() instanceof PrimaryExNode exNode) {
@@ -52,8 +49,6 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
             int index = ((BigDecimal)arrayAccessNode.getIndex().execute(this)).intValue();
             instance.getValues().set(index-1,value);
         }
-
-        return null;
     }
 
     private void assignToField(DotOpNode dotOpNode, Object value) {
@@ -64,14 +59,11 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     private StructureInstance loadStructInstance(DotOpNode dotOpNode) {
-        Object left = dotOpNode.getLeft().execute(this);
-        if(left instanceof StructureInstance leftStruct) {
-            if(leftStruct.getFields().get(dotOpNode.getRight().get().getValue()) instanceof StructureInstance rightStruct) {
-                return rightStruct;
-            }
-            return leftStruct;
+        StructureInstance left = (StructureInstance) dotOpNode.getLeft().execute(this);
+        if(left.getFields().get(dotOpNode.getRight().get().getValue()) instanceof StructureInstance rightStruct) {
+            return rightStruct;
         }
-        return null;
+        return left;
     }
 
     @Override
@@ -86,19 +78,17 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     @Override
-    public Object execute(IfStatementNode node) {
+    public void execute(IfStatementNode node) {
         if((boolean)node.getCondition().execute(this)) {
             node.getThenBlock().execute(this);
         }else {
             node.getElseBlock().ifPresent(e->e.execute(this));
         }
-        return null;
     }
 
     @Override
-    public Object execute(PrintStatementNode node) {
+    public void execute(PrintStatementNode node) {
         System.out.println(node.getExpression().execute(this));
-        return null;
     }
 
     @Override
@@ -108,45 +98,37 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
 
     @Override
     public Object execute(FunctionCallNode node) {
-        Class<? extends Symbol> aClass = currentScope.resolve(node.getName()).getClass();
-        if (aClass.equals(FunctionAggregateSymbol.class)) {
-            return processAsAFunction(node);
+        Symbol symbol = currentScope.resolve(node.getName());
+        if (symbol instanceof FunctionAggregateSymbol functionAggregateSymbol) {
+            return processAsAFunction(node, functionAggregateSymbol);
+        } else if (symbol instanceof StructureSymbol structureSymbol) {
+            return processAsAStruct(node, structureSymbol);
         }
-        return processAsAStruct(node);
+        throw new RuntimeException();
     }
 
-    private Object processAsAStruct(FunctionCallNode node) {
-        StructureSymbol structure = (StructureSymbol) currentScope.resolve(node.getName());
+    private Object processAsAStruct(FunctionCallNode node, StructureSymbol structureSymbol) {
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
-        var strInst = new StructureInstance(structure);
+        var strInst = new StructureInstance(structureSymbol);
         pushStruct(strInst);
-        var res = functionCallEvaluator.matchesArguments(structure.getConstructorArgs(),evaluatedArgs,memorySpace);
-        if(!res) {
+        if(!functionCallEvaluator.matchesArguments(structureSymbol.getConstructorArgs(),evaluatedArgs,memorySpace)) {
             throw new RuntimeException("SSSSSS");
         }
-        functionCallEvaluator.assignArgumentsToParameters(structure.getConstructorArgs(),evaluatedArgs);
-        structure.getBody().getStatements().forEach(e->e.execute(this));
-        popScope(structure);
+        functionCallEvaluator.assignArgumentsToParameters(structureSymbol.getConstructorArgs(),evaluatedArgs);
+        structureSymbol.getBody().getStatements().forEach(e->e.execute(this));
+        popScope(structureSymbol);
         return strInst;
     }
 
-    private Object processAsAFunction(FunctionCallNode node) {
-        var fun = (FunctionAggregateSymbol) currentScope.resolve(node.getName());
+    private Object processAsAFunction(FunctionCallNode node, FunctionAggregateSymbol functionAggregateSymbol) {
         var evaluatedArgs =functionCallEvaluator.evaluateArguments(node);
-        FunctionSymbol finalFun = functionCallEvaluator.eval(fun,evaluatedArgs,memorySpace);
-        if(finalFun == null) {
-            throw new RuntimeException("AAAAAAAAAA");
-        }
+        FunctionSymbol finalFun = functionCallEvaluator.eval(functionAggregateSymbol,evaluatedArgs,memorySpace)
+                        .orElseThrow(()->new RuntimeException("aaaa"));
         pushScope(finalFun);
         functionCallEvaluator.assignArgumentsToParameters(finalFun.getSymbols(),evaluatedArgs);
-        Object ret = null;
-        if(finalFun.getType()!=null) {
-            ret = finalFun.getBody().execute(this);
-        }else {
-            finalFun.getBody().execute(this);
-        }
+        Object ret = finalFun.getBody().execute(this);
         popScope(finalFun);
-        return ret;
+        return finalFun.getType()==null? null : ret;
     }
 
     @Override
@@ -173,61 +155,37 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     @Override
-    public Object execute(FunctionDefNode node) {
-        return null;
-    }
-
-    @Override
-    public Object execute(ParameterNode node) {
-        return null;
-    }
-
-    @Override
-    public Object execute(TypeSpecifierNode node) {
-        return null;
-    }
-
-    @Override
-    public Object execute(VariableDefNode node) {
+    public void execute(VariableDefNode node) {
         node.getInitializer().ifPresent(expressionNode->{
             Object value = expressionNode.execute(this);
             VarSymbol var = (VarSymbol) currentScope.resolve(node.getVariable().getName());
             var.getGuardExpr().ifPresent(guard -> expressionEvaluator.executeWithGuard(var,value,guard));
             memorySpace.setVariable(node.getVariable().getName(),value);
         });
-        return null;
     }
 
     @Override
-    public Object execute(StatementNode node) {
-        return null;
-    }
-
-    @Override
-    public Object execute(WhileStatementNode node) {
+    public void execute(WhileStatementNode node) {
         while ((boolean)node.getCondition().execute(this)) {
             node.getThenBlock().execute(this);
         }
-        return null;
     }
-
-    @Override
-    public Object execute(StructureNode node) { return null;}
 
     @Override
     public Object execute(DotOpNode node) {
         Object left = node.getLeft().execute(this);
         if(left instanceof StructureInstance struct) {
-            return node.getRight().isRight()? struct.getFields().get(node.getRight().get().getValue())
+            return node.getRight().isRight()?
+                    struct.getFields().get(node.getRight().get().getValue())
                     : execStructFunction(struct,node.getRight().getLeft());
         }
-        return null;
+        throw new RuntimeException("");
     }
 
     private Object execStructFunction(StructureInstance struct, FunctionCallNode node) {
         memorySpace.pushStruct(struct);
         currentScope = struct.getStruct();
-        Object ret = processAsAFunction(node);
+        Object ret = node.execute(this);
         memorySpace.pop();
         currentScope = struct.getStruct().getUpperScope();
         return ret;
@@ -240,8 +198,8 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     }
 
     @Override
-    public Object execute(ArrayNode node) {
-        var arrInstance = new ArrayInstance();
+    public ArrayInstance execute(ArrayNode node) {
+        ArrayInstance arrInstance = new ArrayInstance();
         node.getElements().forEach(el->arrInstance.getValues().add(el.execute(this)));
         return arrInstance;
     }
@@ -256,14 +214,9 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
         currentScope = str.getStruct();
     }
 
-    private Map<String,Object> popStr(StructureInstance str) {
-        currentScope = str.getStruct().getUpperScope();
-        return memorySpace.pop();
-    }
-
-    private Map<String,Object> popScope(Scope scope) {
+    private void popScope(Scope scope) {
         currentScope = scope.getUpperScope();
-        return memorySpace.pop();
+        memorySpace.pop();
     }
 
     @Override

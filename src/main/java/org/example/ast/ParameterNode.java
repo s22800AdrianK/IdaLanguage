@@ -49,6 +49,6 @@ public class ParameterNode extends BaseNode {
     }
     @Override
     public Object execute(IdaInterpreter interpreter) {
-        return interpreter.execute(this);
+        return null;
     }
 }

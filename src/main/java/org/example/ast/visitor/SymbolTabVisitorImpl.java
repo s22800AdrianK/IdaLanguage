@@ -48,7 +48,10 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
 
     @Override
     public void visit(FunctionDefNode node) {
-        List<Symbol> args = node.getParameters().stream().map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null))).toList();
+        List<Symbol> args = node.getParameters()
+                .stream()
+                .map(e->(Symbol)new VarSymbol(e.getName(),e.getGuardExpression().orElse(null)))
+                .toList();
         var func = new FunctionSymbol(node.getToken().getValue(), args, node.getReturnType().orElse(null), node.getBody(), currentScope);
         Symbol symbol = currentScope.resolve(node.getToken().getValue());
         if((symbol instanceof FunctionAggregateSymbol existing)){
@@ -126,17 +129,18 @@ public class SymbolTabVisitorImpl extends VisitorHandler implements SymbolTableV
         ths.setType(struct);
         currentScope.defineSymbol(ths);
         node.getBody().visit(this);
-        node.getBody().getScope().getSymbols().forEach(symbol -> {
-            if(symbol instanceof FunctionAggregateSymbol functionSymbol) {
-                struct.getFunctions().put(functionSymbol.getName(),functionSymbol);
-            }else {
-                struct.getFields().put(symbol.getName(),symbol);
-            }
-        });
+        node.getBody().getScope().getSymbols().forEach(symbol -> classifySymbol(symbol,struct));
         node.setSymbol(struct);
         currentScope = currentScope.getUpperScope();
     }
 
+    private void classifySymbol(Symbol symbol, StructureSymbol structureSymbol)  {
+        if(symbol instanceof FunctionAggregateSymbol functionSymbol) {
+            structureSymbol.getFunctions().put(functionSymbol.getName(),functionSymbol);
+        }else {
+            structureSymbol.getFields().put(symbol.getName(),symbol);
+        }
+    }
     @Override
     public void visit(DotOpNode node) {
         node.getLeft().visit(this);

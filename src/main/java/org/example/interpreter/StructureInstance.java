@@ -12,6 +12,11 @@ public class StructureInstance {
     private final Map<String,Object> fields = new HashMap<>();
     private final StructureSymbol struct;
 
+    protected StructureInstance() {
+        struct = null;
+        this.fields.put("this",this);
+    }
+
     public StructureInstance(StructureSymbol structureSymbol) {
         structureSymbol.getFields().forEach((k,v)->this.fields.put(k,null));
         structureSymbol.getConstructorArgs().forEach((k)->this.fields.put(k.getName(),null));

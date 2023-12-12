@@ -5,24 +5,19 @@ import org.example.ast.PrimaryExNode;
 import org.example.ast.ArrayAccessNode;
 
 public interface IdaInterpreter {
-    Object execute(ProgramNode node);
-    Object execute(AssignmentNode node);
+    void execute(ProgramNode node);
+    void execute(AssignmentNode node);
     Object execute(BlockNode node);
-    Object execute(IfStatementNode node);
-    Object execute(PrintStatementNode node);
+    void execute(IfStatementNode node);
+    void execute(PrintStatementNode node);
     Object execute(ExpressionNode expressionNode);
     Object execute(FunctionCallNode node);
     Object execute(BinaryOpNode node);
     Object execute(PrimaryExNode node);
     Object execute(PrimaryGuardNode node);
-    Object execute(FunctionDefNode node);
-    Object execute(ParameterNode node);
-    Object execute(TypeSpecifierNode node);
-    Object execute(VariableDefNode node);
-    Object execute(StatementNode node);
-    Object execute(WhileStatementNode node);
-    Object execute(StructureNode node);
+    void execute(VariableDefNode node);
+    void execute(WhileStatementNode node);
     Object execute(DotOpNode node);
     Object execute(ArrayAccessNode node);
-    Object execute(ArrayNode node);
+    ArrayInstance execute(ArrayNode node);
 }
