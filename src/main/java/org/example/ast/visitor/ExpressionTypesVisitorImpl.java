@@ -206,7 +206,6 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
                     throw new RuntimeException("type: "+e.getEvalType()+" can't be assigned to "+node.getVariable().getType().getName());
                 }
             });
-            node.getVariable().visit(this);
     }
 
     @Override
@@ -263,7 +262,9 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         if(!isOneTypeArray) {
             throw new RuntimeException(node.getToken().getValue()+" is not oneTypeArray");
         }
-        node.setEvalType(resolveArrayType(node.getElements().get(0).getEvalType()));
+        ArrayBuiltInTypeSymbol arrayBuiltInTypeSymbol = resolveArrayType(node.getElements().get(0).getEvalType());
+        node.setSymbol(arrayBuiltInTypeSymbol);
+        node.setEvalType(arrayBuiltInTypeSymbol);
     }
 
     @Override
@@ -276,9 +277,9 @@ public class ExpressionTypesVisitorImpl extends VisitorHandler implements Expres
         node.setEvalType(node.getTarget().getEvalType());
     }
 
-    private Type resolveArrayType(Type baseType) {
+    private ArrayBuiltInTypeSymbol resolveArrayType(Type baseType) {
         var arrType = ArrayBuiltInTypeSymbol.of(baseType,currentScope);
-        var type = currentScope.resolveType(arrType.getName());
+        var type = (ArrayBuiltInTypeSymbol)currentScope.resolveType(arrType.getName());
         if(type==null) {
             currentScope.defineSymbol(arrType);
             return arrType;

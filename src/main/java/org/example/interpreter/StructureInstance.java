@@ -1,5 +1,6 @@
 package org.example.interpreter;
 import org.example.symbol.StructureSymbol;
+import org.example.symbol.builtIn.BuiltInTypeSymbol;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -12,8 +13,9 @@ public class StructureInstance {
     private final Map<String,Object> fields = new HashMap<>();
     private final StructureSymbol struct;
 
-    protected StructureInstance() {
-        struct = null;
+
+    protected StructureInstance(BuiltInTypeSymbol symbol) {
+        struct = symbol;
         this.fields.put("this",this);
     }
 

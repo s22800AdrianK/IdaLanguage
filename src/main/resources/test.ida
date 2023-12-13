@@ -1,2 +1,4 @@
-a:num[][] = [[1,2],[3,4]]
-print a[1][2]
+var:num[] = [1,2,3,4]
+var.push(1)
+var.remove(1)
+print var

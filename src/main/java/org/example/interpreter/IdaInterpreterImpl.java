@@ -6,6 +6,8 @@ import org.example.ast.ArrayAccessNode;
 import org.example.handler.Handler;
 import org.example.scope.Scope;
 import org.example.symbol.*;
+import org.example.symbol.builtIn.BuiltInTypeSymbol;
+import org.example.token.TokenType;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -142,7 +144,7 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
     public Object execute(PrimaryExNode node) {
         return switch (node.getToken().getType()){
             case NUMBER -> new BigDecimal(node.getValue());
-            case STRING -> node.getValue();
+            case STRING -> new BuiltInInstance(node.getValue(),(BuiltInTypeSymbol) currentScope.resolve(TokenType.TYPE_STRING.getRegex()));
             case BOOL -> node.getValue().equals("true");
             case NAME, THIS_KEYWORD -> memorySpace.getVariable(node.getValue());
             default -> null;
@@ -199,9 +201,14 @@ public class IdaInterpreterImpl implements IdaInterpreter, Handler {
 
     @Override
     public ArrayInstance execute(ArrayNode node) {
-        ArrayInstance arrInstance = new ArrayInstance();
+        ArrayInstance arrInstance = new ArrayInstance(node.getSymbol());
         node.getElements().forEach(el->arrInstance.getValues().add(el.execute(this)));
         return arrInstance;
+    }
+
+    @Override
+    public MemorySpace getMemorySpace() {
+        return this.memorySpace;
     }
 
     private void pushScope(Scope scope) {

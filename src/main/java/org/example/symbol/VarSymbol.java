@@ -13,6 +13,11 @@ public class VarSymbol extends Symbol {
         this.guardExpr = guardExpr;
     }
 
+    public VarSymbol(Type type, String name) {
+        super(name);
+        this.guardExpr = null;
+        this.setType(type);
+    }
     public Optional<ExpressionNode> getGuardExpr() {
         return Optional.ofNullable(guardExpr);
     }

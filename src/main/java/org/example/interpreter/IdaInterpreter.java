@@ -20,4 +20,5 @@ public interface IdaInterpreter {
     Object execute(DotOpNode node);
     Object execute(ArrayAccessNode node);
     ArrayInstance execute(ArrayNode node);
+    MemorySpace getMemorySpace();
 }
